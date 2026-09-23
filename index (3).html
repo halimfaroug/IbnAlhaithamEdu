@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&amp;family=Noto+Kufi+Arabic:wght@500;600;700&amp;display=swap">
+<link rel="stylesheet" href="styles.css">
+<title>منصة مدارس بن الهيثم الخاصة | رياضيات ٢ث</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#5980a6">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<script>if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('./service-worker.js').catch(()=>{})})}</script>
+<style>
+:root{--font-heading:"Barlow Condensed","Noto Kufi Arabic",system-ui,sans-serif;--font-body:"Barlow","IBM Plex Sans Arabic",system-ui,sans-serif}
+html{scroll-behavior:smooth}
+body{margin:0;text-wrap:pretty;font-family:var(--font-body);font-weight:600}
+h1,h2,h3,h4{letter-spacing:0 !important;line-height:1.35}
+a{color:var(--color-accent-700)}
+a:hover{color:var(--color-accent-800)}
+input[type=range]{accent-color:var(--color-accent);width:100%;margin:0}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none !important}}
+#bnh-install-banner{position:fixed;inset-inline:12px;bottom:12px;z-index:60;display:none;align-items:center;gap:12px;padding:12px 16px;background:var(--color-accent-900);color:#fff;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.25);font-family:"Barlow","IBM Plex Sans Arabic",system-ui,sans-serif}
+#bnh-install-banner.show{display:flex}
+#bnh-install-banner button{font:inherit;font-weight:700;cursor:pointer;border:0;border-radius:6px;padding:8px 14px}
+#bnh-install-btn{background:#fff;color:var(--color-accent-900)}
+#bnh-dismiss-btn{background:transparent;color:#fff;opacity:.75}
+</style>
+<script>
+(function(){
+  var deferred=null;
+  window.addEventListener('beforeinstallprompt', function(e){
+    e.preventDefault(); deferred=e;
+    if (window.matchMedia('(display-mode: standalone)').matches) return;
+    if (sessionStorage.getItem('bnh-install-dismissed')) return;
+    var el=document.getElementById('bnh-install-banner');
+    if (el) el.classList.add('show');
+  });
+  document.addEventListener('DOMContentLoaded', function(){
+    var install=document.getElementById('bnh-install-btn');
+    var dismiss=document.getElementById('bnh-dismiss-btn');
+    if (install) install.addEventListener('click', function(){
+      document.getElementById('bnh-install-banner').classList.remove('show');
+      if (deferred) deferred.prompt();
+    });
+    if (dismiss) dismiss.addEventListener('click', function(){
+      document.getElementById('bnh-install-banner').classList.remove('show');
+      sessionStorage.setItem('bnh-install-dismissed','1');
+    });
+  });
+})();
+</script>
+</helmet>
+<div id="bnh-install-banner">
+    <span>ثبّت المنصة على جهازك للوصول السريع والعمل دون إنترنت.</span>
+    <button type="button" id="bnh-install-btn">تثبيت</button>
+    <button type="button" id="bnh-dismiss-btn">✕</button>
+  </div>
+  <div dir="rtl" lang="ar" style="min-height:100vh;background:var(--color-bg);color:var(--color-text);font-family:var(--font-body);position:relative">
+  <sc-if value="{{ showGrid }}" hint-placeholder-val="{{ true }}">
+    <div style="position:fixed;inset:0;pointer-events:none;background-image:linear-gradient(to right,color-mix(in srgb,var(--color-text) 4%,transparent) 1px,transparent 1px),linear-gradient(to bottom,color-mix(in srgb,var(--color-text) 4%,transparent) 1px,transparent 1px);background-size:48px 48px"></div>
+  </sc-if>
+
+  <nav style="position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:10px clamp(16px,5vw,72px);background:color-mix(in srgb,var(--color-bg) 94%,transparent);backdrop-filter:blur(6px);border-bottom:1px solid var(--color-divider)">
+    <button type="button" onClick="{{ goHome }}" style="all:unset;cursor:pointer;display:flex;align-items:center;gap:10px;margin-inline-end:auto">
+      <img src="assets/logo.jpg" alt="شعار مجموعة مدارس بن الهيثم" style="width:40px;height:40px;object-fit:cover;mix-blend-mode:multiply;border:1px solid var(--color-divider)">
+      <span style="display:grid;line-height:1.3">
+        <strong style="font-family:var(--font-heading);font-weight:600;font-size:18px">منصة مدارس بن الهيثم الخاصة</strong>
+        <small style="font-size:15px;color:color-mix(in srgb,var(--color-text) 72%,transparent)">الرهد أبو دكنة · رياضيات ٢ث</small>
+      </span>
+    </button>
+    <div style="display:flex;gap:2px;flex-wrap:wrap">
+      <sc-for list="{{ navItems }}" as="n" hint-placeholder-count="5">
+        <button type="button" onClick="{{ n.go }}" style="all:unset;cursor:pointer;padding:8px 12px;font-size:17px;font-weight:500;color:{{ n.color }};box-shadow:{{ n.line }};transition:color .15s,background .15s" style-hover="color:var(--color-accent-700);background:color-mix(in srgb,var(--color-accent) 7%,transparent)">{{ n.label }}</button>
+      </sc-for>
+    </div>
+    <button type="button" onClick="{{ goDash }}" title="لوحتي" style="all:unset;cursor:pointer;width:36px;height:36px;display:grid;place-items:center;background:var(--color-accent);color:var(--color-bg);font-family:var(--font-heading);font-weight:600;font-size:19px;transition:background .15s" style-hover="background:var(--color-accent-600)">{{ initial }}</button>
+  </nav>
+
+  <!-- ================= الرئيسية ================= -->
+  <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+    <div data-screen-label="01 الرئيسية" style="max-width:1200px;margin:0 auto;padding:0 clamp(16px,5vw,72px);position:relative">
+      <section style="padding:clamp(56px,9vw,112px) 0 56px;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:clamp(32px,6vw,88px);align-items:center">
+        <div style="display:grid;gap:24px">
+          <h1 style="font-size:clamp(40px,6vw,76px);line-height:1.25;margin:0">
+            <span style="display:block">افهم الفكرة.</span>
+            <span style="display:block">حُلّ السؤال.</span>
+            <span style="display:block;color:var(--color-accent-700)">اجمع إنجازاتك.</span>
+          </h1>
+          <p style="font-size:20px;line-height:1.75;max-width:52ch;margin:0;color:color-mix(in srgb,var(--color-text) 78%,transparent)">منصة هادئة لمراجعة وحدات كتاب الرياضيات الثماني للصف الثاني الثانوي، مع أسئلة وأجوبة مختصرة، واختبار سريع، ومختبر تفاعلي — وتقدّمك محفوظ على جهازك.</p>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button type="button" class="btn btn-primary blueprint" onClick="{{ goBankAll }}" style="padding:11px 20px;font-size:18px"><i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>ابدأ من بنك الأسئلة ←</button>
+            <button type="button" class="btn btn-secondary" onClick="{{ goQuiz }}" style="padding:11px 20px;font-size:18px">اختبر نفسك</button>
+          </div>
+        </div>
+        <figure class="blueprint" style="margin:0;padding:clamp(24px,4vw,48px);display:grid;place-items:center;justify-self:center;width:min(100%,380px)">
+          <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+          <img src="assets/logo.jpg" alt="شعار مجموعة مدارس بن الهيثم الخاصة" style="width:100%;height:auto;mix-blend-mode:multiply">
+          <figcaption style="font-size:15px;margin-top:12px;color:color-mix(in srgb,var(--color-text) 72%,transparent)">مجموعة مدارس ابن الهيثم الخاصة</figcaption>
+        </figure>
+      </section>
+
+      <section class="blueprint" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));margin-bottom:24px">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <sc-for list="{{ stats }}" as="s" hint-placeholder-count="4">
+          <div style="padding:20px 24px;border-inline-start:1px solid var(--color-divider);margin-inline-start:-1px;display:grid;gap:2px">
+            <span style="font-size:16px;font-weight:600;color:color-mix(in srgb,var(--color-text) 72%,transparent)">{{ s.label }}</span>
+            <span style="font-family:var(--font-heading);font-weight:600;font-size:46px;line-height:1.2">{{ s.value }}</span>
+            <span style="font-size:16px;color:color-mix(in srgb,var(--color-text) 72%,transparent)">{{ s.note }}</span>
+          </div>
+        </sc-for>
+      </section>
+
+      <section ref="{{ mapRef }}" style="height:340vh;position:relative;margin-top:72px">
+        <div style="position:sticky;top:64px;min-height:calc(100vh - 64px);display:grid;align-content:center;gap:28px;padding:24px 0">
+          <div>
+            <span style="font-size:16px;font-weight:600;color:var(--color-accent-700)">٠١ · خريطة الكتاب</span>
+            <div style="height:1px;background:var(--color-divider);margin-top:10px"></div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:clamp(28px,5vw,72px);align-items:start">
+            <div class="blueprint" style="padding:clamp(24px,3vw,40px);display:grid;gap:16px;min-height:340px;align-content:start">
+              <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+              <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px">
+                <span style="font-size:16px;font-weight:600;color:var(--color-accent-700)">الوحدة {{ activeUnit.num }}</span>
+                <span style="font-family:var(--font-heading);font-weight:600;font-size:66px;line-height:1;color:var(--color-accent-300)">{{ activeUnit.num }}<span style="font-size:26px;color:color-mix(in srgb,var(--color-text) 45%,transparent)"> / ٠٨</span></span>
+              </div>
+              <h2 style="font-size:clamp(28px,3.4vw,40px);margin:0;line-height:1.3">{{ activeUnit.title }}</h2>
+              <p style="margin:0;font-size:19px;line-height:1.75;color:color-mix(in srgb,var(--color-text) 78%,transparent)">{{ activeUnit.desc }}</p>
+              <p style="margin:0;font-size:17px;line-height:1.75;color:var(--color-accent-800)"><strong>لماذا ندرسها؟ </strong>{{ activeUnit.why }}</p>
+              <span style="font-size:16px;color:color-mix(in srgb,var(--color-text) 72%,transparent)">{{ activeUnit.pages }}</span>
+              <div style="display:grid;gap:6px;margin-top:8px">
+                <div style="display:flex;justify-content:space-between;font-size:16px;color:color-mix(in srgb,var(--color-text) 72%,transparent)"><span>{{ activeUnit.qCount }} أسئلة</span><strong style="color:var(--color-text)">{{ activeUnit.pctLabel }}</strong></div>
+                <div style="height:6px;background:var(--color-neutral-200);position:relative"><div style="position:absolute;inset-block:0;inset-inline-start:0;width:{{ activeUnit.pctW }};background:var(--color-accent);transition:width .4s"></div></div>
+              </div>
+              <button type="button" class="btn btn-secondary" onClick="{{ activeUnit.go }}" style="justify-self:start;margin-top:8px;padding:9px 16px">راجع هذه الوحدة</button>
+            </div>
+            <div style="position:relative;padding-inline-start:20px">
+              <div style="position:absolute;inset-block:0;inset-inline-start:0;width:2px;background:var(--color-neutral-200)"></div>
+              <div style="position:absolute;top:0;inset-inline-start:0;width:2px;height:{{ railH }};background:var(--color-accent)"></div>
+              <sc-for list="{{ unitRows }}" as="u" hint-placeholder-count="8">
+                <button type="button" onClick="{{ u.go }}" style="all:unset;box-sizing:border-box;width:100%;cursor:pointer;display:grid;grid-template-columns:40px 1fr auto;gap:12px;align-items:center;padding:11px 8px;border-bottom:1px solid color-mix(in srgb,var(--color-text) 7%,transparent);opacity:{{ u.op }};transition:opacity .3s,background .15s" style-hover="background:color-mix(in srgb,var(--color-accent) 7%,transparent);opacity:1">
+                  <span style="font-family:var(--font-heading);font-weight:600;font-size:20px;color:var(--color-accent-700)">{{ u.num }}</span>
+                  <span style="font-size:19px;font-weight:{{ u.weight }}">{{ u.title }}</span>
+                  <span style="font-size:16px;color:color-mix(in srgb,var(--color-text) 72%,transparent)">{{ u.pctLabel }}</span>
+                </button>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section style="padding:72px 0 88px">
+        <span style="font-size:16px;font-weight:600;color:var(--color-accent-700)">٠٢ · مسارات سريعة</span>
+        <div style="height:1px;background:var(--color-divider);margin:10px 0 36px"></div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:clamp(24px,3vw,44px)">
+          <sc-for list="{{ paths }}" as="p" hint-placeholder-count="3">
+            <button type="button" class="blueprint" onClick="{{ p.go }}" style="all:unset;box-sizing:border-box;position:relative;border:1px solid var(--color-divider);padding:24px;cursor:pointer;display:grid;gap:10px;align-content:start;transition:background .15s,border-color .15s,transform .16s" style-hover="background:color-mix(in srgb,var(--color-accent) 6%,transparent);border-color:var(--color-accent)" style-active="transform:scale(0.98)">
+              <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+              <span style="font-size:16px;font-weight:600;color:var(--color-accent-700)">{{ p.kicker }}</span>
+              <span style="font-family:var(--font-heading);font-weight:600;font-size:26px;line-height:1.35">{{ p.title }}</span>
+              <span style="font-size:18px;line-height:1.7;color:color-mix(in srgb,var(--color-text) 78%,transparent)">{{ p.body }}</span>
+              <span style="font-weight:600;font-size:17px;color:var(--color-accent-700);margin-top:6px">افتح ←</span>
+            </button>
+          </sc-for>
+        </div>
+      </section>
+
+      <footer style="padding:28px 0 48px;border-top:1px solid var(--color-divider);font-size:16px;line-height:1.7;color:color-mix(in srgb,var(--color-text) 72%,transparent);display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px">
+        <span style="max-width:70ch">المحتوى مبني على كتاب الرياضيات للصف الثاني الثانوي الصادر عن المركز القومي للمناهج والبحث التربوي بخت الرضا.</span>
+        <span>منصة مدارس بن الهيثم الخاصة · الرهد أبو دكنة</span>
+      </footer>
+    </div>
+  </sc-if>
+
+  <!-- ================= بنك الأسئلة ================= -->
+  <sc-if value="{{ isBank }}" hint-placeholder-val="{{ false }}">
+    <div data-screen-label="02 بنك الأسئلة" style="max-width:1200px;margin:0 auto;padding:44px clamp(16px,5vw,72px) 96px;display:grid;gap:28px;position:relative">
+      <header style="display:flex;justify-content:space-between;align-items:end;gap:16px;flex-wrap:wrap">
+        <div>
+          <span style="font-size:16px;font-weight:600;color:var(--color-accent-700)">بنك الأسئلة</span>
+          <h1 style="margin:4px 0 0;font-size:clamp(32px,4.4vw,52px)">{{ bankTitle }}</h1>
+        </div>
+        <span class="tag tag-accent">{{ bankCount }}</span>
+      </header>
+      <div style="display:grid;gap:14px">
+        <input class="input" type="search" placeholder="ابحث في السؤال أو الموضوع…" value="{{ term }}" onChange="{{ onTerm }}" style="max-width:520px;min-height:42px;font-size:18px">
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <sc-for list="{{ chips }}" as="c" hint-placeholder-count="9">
+            <button type="button" onClick="{{ c.go }}" style="all:unset;cursor:pointer;padding:6px 12px;font-size:16px;border:1px solid {{ c.border }};background:{{ c.bg }};color:{{ c.fg }};transition:background .15s,border-color .15s" style-hover="border-color:var(--color-accent)">{{ c.label }}</button>
+          </sc-for>
+        </div>
+      </div>
+      <sc-if value="{{ bankEmpty }}" hint-placeholder-val="{{ false }}">
+        <div class="blueprint" style="padding:40px;text-align:center;color:color-mix(in srgb,var(--color-text) 72%,transparent)"><i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>لم نجد سؤالًا مطابقًا. جرّب كلمة أخرى.</div>
+      </sc-if>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,320px),1fr));gap:28px">
+        <sc-for list="{{ bankItems }}" as="q" hint-placeholder-count="6">
+          <article class="blueprint" style="padding:22px;display:grid;gap:14px;align-content:start;transition:border-color .15s" style-hover="border-color:color-mix(in srgb,var(--color-accent) 60%,transparent)">
+            <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+              <span style="font-size:16px;font-weight:600;color:var(--color-accent-700)">{{ q.kicker }}</span>
+              <span class="tag {{ q.tagClass }}">{{ q.status }}</span>
+            </div>
+            <h3 style="margin:0;font-size:22px;line-height:1.55">{{ q.q }}</h3>
+            <sc-if value="{{ q.open }}" hint-placeholder-val="{{ false }}">
+              <div style="display:grid;gap:8px;padding:14px 16px;background:var(--color-accent-100);border-inline-start:2px solid var(--color-accent);font-size:18px;line-height:1.75">
+                <div style="color:var(--color-accent-900)"><strong>الإجابة: </strong>{{ q.a }}</div>
+                <div style="color:var(--color-accent-800);font-size:17px"><strong>الفكرة: </strong>{{ q.idea }}</div>
+              </div>
+            </sc-if>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:2px">
+              <button type="button" class="btn btn-ghost" onClick="{{ q.toggle }}">{{ q.toggleLabel }}</button>
+              <sc-if value="{{ q.open }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;gap:8px;margin-inline-start:auto">
+                  <button type="button" class="btn btn-secondary" onClick="{{ q.review }}">أحتاج مراجعة</button>
+                  <button type="button" class="btn btn-primary" onClick="{{ q.know }}">عرفتها ✓</button>
+                </div>
+              </sc-if>
+            </div>
+          </article>
+        </sc-for>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ================= اختبر نفسك ================= -->
+  <sc-if value="{{ isQuiz }}" hint-placeholder-val="{{ false }}">
+    <div data-screen-label="03 اختبر نفسك" style="max-width:820px;margin:0 auto;padding:44px clamp(16px,5vw,72px) 96px;display:grid;gap:28px;position:relative">
+      <header style="display:grid;gap:12px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap">
+          <span style="font-size:16px;font-weight:600;color:var(--color-accent-700)">اختبر نفسك · {{ quizUnit }}</span>
+          <span style="font-size:16px;color:color-mix(in srgb,var(--color-text) 72%,transparent)">{{ quizCount }}</span>
+        </div>
+        <div style="height:4px;background:var(--color-neutral-200);position:relative"><div style="position:absolute;inset-block:0;inset-inline-start:0;width:{{ quizW }};background:var(--color-accent);transition:width .3s cubic-bezier(.23,1,.32,1)"></div></div>
+      </header>
+
+      <sc-if value="{{ quizIdle }}" hint-placeholder-val="{{ true }}">
+        <div class="blueprint" style="padding:clamp(28px,5vw,48px);display:grid;gap:18px">
+          <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+          <h1 style="margin:0;font-size:clamp(32px,4.4vw,48px)">جاهز للبدء؟</h1>
+          <p style="margin:0;font-size:19px;line-height:1.75;color:color-mix(in srgb,var(--color-text) 78%,transparent)">{{ quizIntro }}</p>
+          <p style="margin:0;font-size:16px;color:color-mix(in srgb,var(--color-text) 72%,transparent)">اختصارات: ١–٤ لاختيار الإجابة، Enter للتحقق والمتابعة.</p>
+          <button type="button" class="btn btn-primary blueprint" onClick="{{ startQuiz }}" style="justify-self:start;padding:11px 22px;font-size:18px"><i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>ابدأ الاختبار</button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ quizRunning }}" hint-placeholder-val="{{ false }}">
+        <div style="display:grid;gap:20px">
+          <div class="blueprint" style="padding:clamp(24px,4vw,40px);display:grid;gap:10px">
+            <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+            <span style="font-size:16px;font-weight:600;color:var(--color-accent-700)">{{ quizTopic }}</span>
+            <h2 style="margin:0;font-size:clamp(24px,3.2vw,34px);line-height:1.55">{{ quizQ }}</h2>
+          </div>
+          <div style="display:grid;gap:10px">
+            <sc-for list="{{ options }}" as="o" hint-placeholder-count="4">
+              <button type="button" onClick="{{ o.pick }}" style="all:unset;box-sizing:border-box;cursor:pointer;display:grid;grid-template-columns:36px 1fr auto;gap:14px;align-items:center;padding:14px 16px;border:1px solid {{ o.border }};background:{{ o.bg }};color:{{ o.fg }};transition:border-color .15s,background .15s,transform .14s" style-hover="border-color:var(--color-accent)" style-active="transform:scale(0.99)">
+                <span style="width:32px;height:32px;display:grid;place-items:center;border:1px solid var(--color-divider);font-family:var(--font-heading);font-weight:600;font-size:18px">{{ o.letter }}</span>
+                <span style="font-size:19px;line-height:1.6">{{ o.label }}</span>
+                <span style="font-size:16px;font-weight:600">{{ o.mark }}</span>
+              </button>
+            </sc-for>
+          </div>
+          <sc-if value="{{ quizChecked }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:14px 16px;background:var(--color-accent-100);border-inline-start:2px solid var(--color-accent);font-size:18px;line-height:1.7;color:var(--color-accent-900)"><strong>{{ feedbackTitle }}</strong> {{ feedbackIdea }}</div>
+          </sc-if>
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
+            <span style="font-size:17px;color:color-mix(in srgb,var(--color-text) 72%,transparent)">النقاط في هذا الاختبار: <strong style="color:var(--color-text)">{{ quizScore }}</strong></span>
+            <button type="button" class="btn btn-primary" onClick="{{ quizAction }}" style="padding:10px 22px;font-size:18px">{{ quizActionLabel }}</button>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ quizDoneView }}" hint-placeholder-val="{{ false }}">
+        <div class="blueprint" style="padding:clamp(28px,5vw,48px);display:grid;gap:22px">
+          <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+          <h1 style="margin:0;font-size:clamp(34px,4.6vw,52px)">اكتمل التحدي!</h1>
+          <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border:1px solid var(--color-divider)">
+            <sc-for list="{{ quizSummary }}" as="t" hint-placeholder-count="3">
+              <div style="padding:16px;border-inline-start:1px solid var(--color-divider);margin-inline-start:-1px">
+                <div style="font-size:16px;color:color-mix(in srgb,var(--color-text) 72%,transparent)">{{ t.label }}</div>
+                <div style="font-family:var(--font-heading);font-weight:600;font-size:40px;line-height:1.3">{{ t.value }}</div>
+              </div>
+            </sc-for>
+          </div>
+          <p style="margin:0;font-size:19px;line-height:1.75;color:color-mix(in srgb,var(--color-text) 78%,transparent)">أحسنت على إتمام الاختبار. عد إلى بنك الأسئلة لتثبيت المفاهيم التي تحتاج مراجعة.</p>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button type="button" class="btn btn-primary" onClick="{{ startQuiz }}" style="padding:10px 20px">إعادة الاختبار</button>
+            <button type="button" class="btn btn-secondary" onClick="{{ goBankAll }}" style="padding:10px 20px">بنك الأسئلة</button>
+            <button type="button" class="btn btn-ghost" onClick="{{ goDash }}">لوحتي</button>
+          </div>
+        </div>
+      </sc-if>
+    </div>
+  </sc-if>
+
+  <!-- ================= المختبر ================= -->
+  <sc-if value="{{ isLab }}" hint-placeholder-val="{{ false }}">
+    <div data-screen-label="04 المختبر" style="max-width:1200px;margin:0 auto;padding:44px clamp(16px,5vw,72px) 96px;display:grid;gap:28px;position:relative">
+      <header style="display:flex;justify-content:space-between;align-items:end;gap:16px;flex-wrap:wrap">
+        <div>
+          <span style="font-size:16px;font-weight:600;color:var(--color-accent-700)">المختبر التفاعلي</span>
+          <h1 style="margin:4px 0 0;font-size:clamp(32px,4.4vw,52px)">حرّك القيم، وشاهد الرياضيات</h1>
+        </div>
+        <div class="seg">
+          <sc-for list="{{ labTabs }}" as="t" hint-placeholder-count="3">
+            <button type="button" onClick="{{ t.go }}" style="all:unset;cursor:pointer;padding:8px 14px;font-size:17px;background:{{ t.bg }};color:{{ t.fg }};border-inline-start:1px solid var(--color-divider);margin-inline-start:-1px;transition:background .15s" style-hover="background:{{ t.hover }}">{{ t.label }}</button>
+          </sc-for>
+        </div>
+      </header>
+
+      <sc-if value="{{ labExp }}" hint-placeholder-val="{{ true }}">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:clamp(24px,4vw,48px);align-items:start">
+          <div class="blueprint" style="padding:24px;display:grid;gap:22px">
+            <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+            <div>
+              <span style="font-size:16px;font-weight:600;color:var(--color-accent-700)">الوحدة ٠١ · الدالة الأسية</span>
+              <div style="font-family:var(--font-heading);font-weight:600;font-size:32px;margin-top:6px">ص = {{ eaLabel }} × ({{ ebLabel }})<sup style="font-size:0.6em">س</sup></div>
+            </div>
+            <div class="field"><label style="display:flex;justify-content:space-between"><span>المعامل أ</span><strong style="color:var(--color-text)">{{ eaLabel }}</strong></label><input type="range" min="0.5" max="3" step="0.5" value="{{ ea }}" onChange="{{ onEa }}"></div>
+            <div class="field"><label style="display:flex;justify-content:space-between"><span>الأساس ب</span><strong style="color:var(--color-text)">{{ ebLabel }}</strong></label><input type="range" min="0.2" max="3" step="0.1" value="{{ eb }}" onChange="{{ onEb }}"></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--color-divider)">
+              <sc-for list="{{ expReadouts }}" as="r" hint-placeholder-count="4">
+                <div style="padding:12px 14px;border-inline-start:1px solid var(--color-divider);border-bottom:1px solid var(--color-divider);margin-inline-start:-1px;margin-bottom:-1px">
+                  <div style="font-size:15px;color:color-mix(in srgb,var(--color-text) 72%,transparent)">{{ r.label }}</div>
+                  <div style="font-family:var(--font-heading);font-weight:600;font-size:24px">{{ r.value }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+          <figure class="blueprint" dir="ltr" style="margin:0;padding:20px">
+            <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+            <svg viewBox="-10 -10 620 340" style="width:100%;height:auto;display:block">
+              <defs><clipPath id="clipExp"><rect x="0" y="0" width="600" height="320"></rect></clipPath></defs>
+              <path d="{{ expGrid }}" stroke="var(--color-divider)" stroke-width="1" fill="none"></path>
+              <path d="M300 0 V320 M0 310 H600" stroke="var(--color-neutral-500)" stroke-width="1.2" fill="none"></path>
+              <g clip-path="url(#clipExp)"><path d="{{ expPath }}" stroke="var(--color-accent)" stroke-width="2.5" fill="none" style="transition:d .25s"></path></g>
+              <path d="{{ expMarks }}" stroke="var(--color-accent-800)" stroke-width="1.5" fill="var(--color-bg)"></path>
+            </svg>
+            <figcaption style="display:flex;justify-content:space-between;font-size:15px;margin-top:6px;color:color-mix(in srgb,var(--color-text) 72%,transparent)"><span>س = −٣</span><span>س = ٠</span><span>س = ٣</span></figcaption>
+          </figure>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ labSlope }}" hint-placeholder-val="{{ false }}">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:clamp(24px,4vw,48px);align-items:start">
+          <div class="blueprint" style="padding:24px;display:grid;gap:18px">
+            <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+            <span style="font-size:16px;font-weight:600;color:var(--color-accent-700)">الوحدة ٠٢ · الميل ومعادلة المستقيم</span>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px 20px">
+              <div class="field"><label style="display:flex;justify-content:space-between"><span>س₁</span><strong style="color:var(--color-text)">{{ x1L }}</strong></label><input type="range" min="-5" max="5" step="1" value="{{ x1 }}" onChange="{{ onX1 }}"></div>
+              <div class="field"><label style="display:flex;justify-content:space-between"><span>ص₁</span><strong style="color:var(--color-text)">{{ y1L }}</strong></label><input type="range" min="-5" max="5" step="1" value="{{ y1 }}" onChange="{{ onY1 }}"></div>
+              <div class="field"><label style="display:flex;justify-content:space-between"><span>س₂</span><strong style="color:var(--color-text)">{{ x2L }}</strong></label><input type="range" min="-5" max="5" step="1" value="{{ x2 }}" onChange="{{ onX2 }}"></div>
+              <div class="field"><label style="display:flex;justify-content:space-between"><span>ص₂</span><strong style="color:var(--color-text)">{{ y2L }}</strong></label><input type="range" min="-5" max="5" step="1" value="{{ y2 }}" onChange="{{ onY2 }}"></div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--color-divider)">
+              <sc-for list="{{ slopeReadouts }}" as="r" hint-placeholder-count="4">
+                <div style="padding:12px 14px;border-inline-start:1px solid var(--color-divider);border-bottom:1px solid var(--color-divider);margin-inline-start:-1px;margin-bottom:-1px">
+                  <div style="font-size:15px;color:color-mix(in srgb,var(--color-text) 72%,transparent)">{{ r.label }}</div>
+                  <div style="font-family:var(--font-heading);font-weight:600;font-size:22px">{{ r.value }}</div>
+                </div>
+              </sc-for>
+            </div>
+            <p style="margin:0;font-size:17px;line-height:1.7;color:color-mix(in srgb,var(--color-text) 78%,transparent)">م = (ص₂ − ص₁) ÷ (س₂ − س₁). المثلث المتقطع يوضح التغير الرأسي والأفقي.</p>
+          </div>
+          <figure class="blueprint" dir="ltr" style="margin:0;padding:20px;max-width:520px;width:100%;justify-self:center">
+            <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+            <svg viewBox="-6 -6 372 372" style="width:100%;height:auto;display:block">
+              <defs><clipPath id="clipSlope"><rect x="0" y="0" width="360" height="360"></rect></clipPath></defs>
+              <path d="{{ slopeGrid }}" stroke="var(--color-divider)" stroke-width="1" fill="none"></path>
+              <path d="M180 0 V360 M0 180 H360" stroke="var(--color-neutral-500)" stroke-width="1.2" fill="none"></path>
+              <g clip-path="url(#clipSlope)"><path d="{{ slopeLine }}" stroke="var(--color-accent)" stroke-width="2.5" fill="none"></path></g>
+              <path d="{{ slopeTri }}" stroke="var(--color-accent-700)" stroke-width="1.5" stroke-dasharray="5 4" fill="none"></path>
+              <path d="{{ slopePts }}" stroke="var(--color-accent-900)" stroke-width="1.5" fill="var(--color-bg)"></path>
+            </svg>
+            <figcaption style="display:flex;justify-content:space-between;font-size:15px;margin-top:6px;color:color-mix(in srgb,var(--color-text) 72%,transparent)"><span>{{ p1Label }}</span><span>{{ p2Label }}</span></figcaption>
+          </figure>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ labSeq }}" hint-placeholder-val="{{ false }}">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:clamp(24px,4vw,48px);align-items:start">
+          <div class="blueprint" style="padding:24px;display:grid;gap:18px">
+            <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+            <span style="font-size:16px;font-weight:600;color:var(--color-accent-700)">الوحدة ٠٨ · المتتاليات</span>
+            <div class="seg" style="justify-self:start">
+              <sc-for list="{{ seqTabs }}" as="t" hint-placeholder-count="2">
+                <button type="button" onClick="{{ t.go }}" style="all:unset;cursor:pointer;padding:7px 14px;font-size:17px;background:{{ t.bg }};color:{{ t.fg }};border-inline-start:1px solid var(--color-divider);margin-inline-start:-1px">{{ t.label }}</button>
+              </sc-for>
+            </div>
+            <div class="field"><label style="display:flex;justify-content:space-between"><span>الحد الأول ح₁</span><strong style="color:var(--color-text)">{{ s1L }}</strong></label><input type="range" min="-5" max="10" step="1" value="{{ s1 }}" onChange="{{ onS1 }}"></div>
+            <div class="field"><label style="display:flex;justify-content:space-between"><span>{{ stepName }}</span><strong style="color:var(--color-text)">{{ stepL }}</strong></label><input type="range" min="{{ stepMin }}" max="{{ stepMax }}" step="{{ stepStep }}" value="{{ stepVal }}" onChange="{{ onStep }}"></div>
+            <div class="field"><label style="display:flex;justify-content:space-between"><span>عدد الحدود ن</span><strong style="color:var(--color-text)">{{ snL }}</strong></label><input type="range" min="3" max="12" step="1" value="{{ sn }}" onChange="{{ onSn }}"></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--color-divider)">
+              <sc-for list="{{ seqReadouts }}" as="r" hint-placeholder-count="4">
+                <div style="padding:12px 14px;border-inline-start:1px solid var(--color-divider);border-bottom:1px solid var(--color-divider);margin-inline-start:-1px;margin-bottom:-1px">
+                  <div style="font-size:15px;color:color-mix(in srgb,var(--color-text) 72%,transparent)">{{ r.label }}</div>
+                  <div style="font-family:var(--font-heading);font-weight:600;font-size:22px">{{ r.value }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+          <figure class="blueprint" style="margin:0;padding:20px;display:grid;gap:14px">
+            <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+            <div dir="ltr">
+              <svg viewBox="0 0 600 260" style="width:100%;height:auto;display:block">
+                <path d="{{ seqBars }}" fill="var(--color-accent-300)" stroke="var(--color-accent-700)" stroke-width="1"></path>
+                <path d="{{ seqBase }}" stroke="var(--color-neutral-500)" stroke-width="1.2" fill="none"></path>
+              </svg>
+            </div>
+            <figcaption style="font-size:17px;line-height:1.8;color:color-mix(in srgb,var(--color-text) 78%,transparent)">الحدود: {{ seqTerms }}</figcaption>
+          </figure>
+        </div>
+      </sc-if>
+    </div>
+  </sc-if>
+
+  <!-- ================= لوحتي ================= -->
+  <sc-if value="{{ isDash }}" hint-placeholder-val="{{ false }}">
+    <div data-screen-label="05 لوحتي" style="max-width:1200px;margin:0 auto;padding:44px clamp(16px,5vw,72px) 96px;display:grid;gap:32px;position:relative">
+      <header style="display:flex;justify-content:space-between;align-items:end;gap:16px;flex-wrap:wrap">
+        <div>
+          <span style="font-size:16px;font-weight:600;color:var(--color-accent-700)">لوحتي · محفوظة على هذا الجهاز</span>
+          <h1 style="margin:4px 0 0;font-size:clamp(32px,4.4vw,52px)">{{ S.name }}</h1>
+        </div>
+        <button type="button" class="btn btn-ghost" onClick="{{ askReset }}">مسح التقدم</button>
+      </header>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:28px;align-items:start">
+        <section class="blueprint" style="padding:24px;display:grid;gap:18px">
+          <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+          <h3 style="margin:0;font-size:22px">ملف الطالب</h3>
+          <div class="field"><label>الاسم المعروض</label><input class="input" type="text" value="{{ S.name }}" onChange="{{ onName }}" style="font-size:18px"></div>
+          <div style="display:grid;gap:8px">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px"><span style="font-size:18px;font-weight:600">{{ levelText }}</span><span style="font-family:var(--font-heading);font-weight:600;font-size:22px">{{ levelPoints }}</span></div>
+            <div style="height:8px;background:var(--color-neutral-200);position:relative"><div style="position:absolute;inset-block:0;inset-inline-start:0;width:{{ levelW }};background:var(--color-accent);transition:width .4s"></div></div>
+            <span style="font-size:16px;color:color-mix(in srgb,var(--color-text) 72%,transparent)">+٢ لكل سؤال تعرفه في البنك · +٥ لكل إجابة صحيحة في الاختبار</span>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border:1px solid var(--color-divider)">
+            <sc-for list="{{ dashMini }}" as="s" hint-placeholder-count="3">
+              <div style="padding:12px 14px;border-inline-start:1px solid var(--color-divider);margin-inline-start:-1px">
+                <div style="font-size:15px;color:color-mix(in srgb,var(--color-text) 72%,transparent)">{{ s.label }}</div>
+                <div style="font-family:var(--font-heading);font-weight:600;font-size:28px">{{ s.value }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </section>
+
+        <section class="blueprint" style="padding:24px;display:grid;gap:16px">
+          <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+          <div style="display:flex;justify-content:space-between;align-items:baseline"><h3 style="margin:0;font-size:22px">رموز الإنجاز</h3><span style="font-size:17px;font-weight:600">{{ tokensLabel }}</span></div>
+          <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px">
+            <sc-for list="{{ tokens }}" as="t" hint-placeholder-count="9">
+              <div title="{{ t.full }}" style="padding:12px 8px;display:grid;gap:4px;justify-items:center;text-align:center;border:1px solid {{ t.border }};background:{{ t.bg }};transition:background .3s">
+                <span style="font-family:var(--font-heading);font-weight:600;font-size:24px;color:{{ t.fg }}">{{ t.mark }}</span>
+                <span style="font-size:15px;line-height:1.4;color:{{ t.fg }}">{{ t.name }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <p style="margin:0;font-size:16px;line-height:1.7;color:color-mix(in srgb,var(--color-text) 72%,transparent)">أتقن أسئلة الوحدة الأربعة لفتح رمزها، وأكمل الاختبار لفتح رمز التحدي.</p>
+        </section>
+      </div>
+
+      <section class="blueprint" style="padding:24px">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:16px">
+          <h3 style="margin:0;font-size:22px">إتقان الوحدات</h3>
+          <span style="font-size:16px;color:color-mix(in srgb,var(--color-text) 72%,transparent)">اضغط على وحدة لمراجعتها</span>
+        </div>
+        <sc-for list="{{ mastery }}" as="m" hint-placeholder-count="8">
+          <button type="button" onClick="{{ m.go }}" style="all:unset;box-sizing:border-box;width:100%;cursor:pointer;display:grid;grid-template-columns:minmax(140px,1.2fr) minmax(100px,2fr) 52px;gap:16px;align-items:center;padding:10px 6px;border-bottom:1px solid color-mix(in srgb,var(--color-text) 7%,transparent);transition:background .15s" style-hover="background:color-mix(in srgb,var(--color-accent) 7%,transparent)">
+            <span style="font-size:18px;display:flex;gap:10px;align-items:baseline"><span style="font-family:var(--font-heading);font-weight:600;color:var(--color-accent-700)">{{ m.num }}</span>{{ m.title }}</span>
+            <span style="height:8px;background:var(--color-neutral-200);position:relative"><span style="position:absolute;inset-block:0;inset-inline-start:0;width:{{ m.w }};background:var(--color-accent);transition:width .4s"></span></span>
+            <span style="font-family:var(--font-heading);font-weight:600;font-size:19px;text-align:end">{{ m.pctLabel }}</span>
+          </button>
+        </sc-for>
+      </section>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ confirmReset }}" hint-placeholder-val="{{ false }}">
+    <div class="dialog-backdrop" style="z-index:40" onClick="{{ cancelReset }}">
+      <div class="dialog" role="dialog" onClick="{{ stop }}">
+        <div class="dialog-title">مسح التقدم؟</div>
+        <div class="dialog-body">سيُحذف سجل الأسئلة والنقاط ورموز الإنجاز من هذا الجهاز. لا يمكن التراجع عن ذلك.</div>
+        <div class="dialog-actions">
+          <button type="button" class="btn btn-secondary" onClick="{{ cancelReset }}">إلغاء</button>
+          <button type="button" class="btn btn-primary" onClick="{{ doReset }}">مسح</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <div aria-live="polite" style="position:fixed;bottom:20px;inset-inline-start:20px;z-index:50;padding:12px 16px;background:var(--color-accent-900);color:var(--color-bg);font-size:17px;opacity:{{ toastOp }};transform:{{ toastT }};transition:opacity .2s cubic-bezier(.23,1,.32,1),transform .2s cubic-bezier(.23,1,.32,1);pointer-events:none">{{ toast }}</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;startPage&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;home&quot;,&quot;bank&quot;,&quot;quiz&quot;,&quot;lab&quot;,&quot;dash&quot;],&quot;default&quot;:&quot;bank&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;showGrid&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;},&quot;quizLength&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;min&quot;:3,&quot;max&quot;:10,&quot;step&quot;:1,&quot;default&quot;:5,&quot;tsType&quot;:&quot;number&quot;}}">
+const UNITS=[
+{t:'الدوال الأسية واللوغاريثمية',s:'الأسية واللوغاريثمية',p:'٥–٣٩',d:'الأسس الكسرية والجذور، الدالة الأسية وخواصها، الدالة اللوغاريثمية وقوانينها، وحل المعادلات الأسية واللوغاريثمية.',w:'نماذج لظواهر لا تصفها الدوال الخطية أو التربيعية: مقياس ريختر، النمو الاقتصادي، انتشار الأوبئة، وقياس الحموضة.'},
+{t:'الهندسة التحليلية',s:'الهندسة التحليلية',p:'٤٠–٦٤',d:'الخط المستقيم وصيغ معادلته: النقطتان، الميل والنقطة، الميل والمقطع الصادي، المقطعان، وطول العمود من نقطة.',w:'تربط الجبر بالهندسة؛ نصف المستقيم بمعادلة ونحسب منها الميل والأجزاء المقطوعة والمسافات.'},
+{t:'المتباينات والبرمجة الخطية',s:'المتباينات',p:'٦٥–٩٢',d:'القيمة المطلقة ومعادلاتها ومتبايناتها، المتباينات الخطية بمتغيرين، منطقة الحلول الممكنة، ومسائل البرمجة الخطية.',w:'نعبّر بها عن قيم محدودة في مواقف حياتية: الحد الأدنى للعمر، سقف الميزانية، ومقارنة التكاليف والأسعار.'},
+{t:'الإحصاء',s:'الإحصاء',p:'٩٣–١٢٣',d:'مقاييس النزعة المركزية: الوسط الحسابي والوسيط والمنوال للبيانات في جداول تكرارية ذات فئات منتظمة.',w:'يدخل في الاقتصاد والتجارة والطب؛ ننظّم البيانات ونفسّرها لنصل إلى قرارات سليمة.'},
+{t:'حساب المثلثات',s:'حساب المثلثات',p:'١٢٤–١٥٥',d:'النسب المثلثية لمجموع وفرق زاويتين، ضعف الزاوية ونصفها، الزوايا المنتسبة، والمعادلات المثلثية.',w:'نقيس به ما يصعب قياسه مباشرة: ارتفاع الجبال والمباني، والمسافات بين الأماكن البعيدة.'},
+{t:'التحويلات الهندسية',s:'التحويلات',p:'١٥٦–١٨١',d:'التناظر، الانعكاس حول مستقيم أو نقطة، الانتقال، والدوران — في الرسم وفي المستوى الإحداثي.',w:'يتغيّر الموضع أو الاتجاه ويبقى الشكل نفسه؛ أداة للرسم الهندسي ورسوم الحاسوب والخرائط.'},
+{t:'الأعداد المركّبة',s:'الأعداد المركّبة',p:'١٨٢–٢٠٤',d:'الكمية التخيلية والعامل ت وقواه، العدد المركّب وشرط تساوي عددين، العمليات عليه، مرافقه ومقلوبه.',w:'معادلات تربيعية مميزها سالب لا حل لها في الأعداد الحقيقية، فنوسّع المجموعة إلى الأعداد المركّبة.'},
+{t:'المتتاليات',s:'المتتاليات',p:'٢٠٥–٢٣٩',d:'المتتالية وصيغها الارتدادية، المتتاليات الحسابية والهندسية: الحد العام والمجموع والأوساط، والمتتالية اللانهائية.',w:'تصف التغيّر المنتظم خطوة بعد خطوة: زيادة سعر سلعة، سداد الأقساط، والنمو السكاني.'}];
+const UNIT_Q=[
+[ // ٠١ الدوال الأسية واللوغاريثمية
+['الأسس الكسرية','اكتب الصورة الجذرية للمقدار س^(٣/٢).','√(س³) أو (√س)³، بشرط س ≥ ٠.','الأس الكسري م/ن يعني الجذر النوني للقوة م.'],
+['الأسس السالبة','بسّط: س^(−٢) (س ≠ ٠).','١ ÷ س².','الأس السالب يعني مقلوب العدد مرفوعًا للأس الموجب.'],
+['الدالة الأسية','ما قيمة ٢^٠؟','١، لأن كل عدد غير صفري مرفوع للأس صفر يساوي واحدًا.','قاعدة الأس الصفري من قوانين الأسس.'],
+['شرط الأساس','ما الشرط الواجب توفره في أساس الدالة الأسية ب في الصيغة ص = ب^س؟','ب > ٠ وب ≠ ١.','بدون هذا الشرط لا تكون الدالة أسية متزايدة أو متناقصة بشكل منتظم.'],
+['اللوغاريثمات','إذا كان ٣² = ٩، فاكتب الصورة اللوغاريثمية.','لو₃ ٩ = ٢.','اللوغاريثم هو الأس الذي نرفع إليه الأساس.'],
+['قوانين اللوغاريثمات','بسّط: لوأ (س ص).','لوأ س + لوأ ص، حيث س وص موجبان.','لوغاريثم حاصل الضرب يساوي مجموع اللوغاريثمين.'],
+['قسمة اللوغاريثمات','بسّط: لوأ (س ÷ ص).','لوأ س − لوأ ص.','لوغاريثم خارج القسمة يساوي الفرق بين اللوغاريثمين.'],
+['أس اللوغاريثم','بسّط: لوأ (سⁿ).','ن × لوأ س.','قانون أس اللوغاريثم ينزل الأس معاملًا.'],
+['معادلة أسية','حل المعادلة ٢^س = ٨.','س = ٣، لأن ٨ = ٢³.','نكتب الطرفين بنفس الأساس ثم نساوي الأسس.'],
+['اللوغاريثم الطبيعي','ما قيمة لن هـ (اللوغاريثم الطبيعي للعدد هـ)؟','١.','لن س = لوهـ س، ولوغاريثم أي عدد لأساس نفسه يساوي ١.']
+],
+[ // ٠٢ الهندسة التحليلية
+['الميل','أوجد ميل المستقيم المار بالنقطتين (١، ٢) و(٣، ٦).','الميل = (٦ − ٢) ÷ (٣ − ١) = ٢.','م = (ص₂ − ص₁) ÷ (س₂ − س₁).'],
+['الصيغة العامة','ما الصورة العامة لمعادلة الخط المستقيم؟','أ س + ب ص + جـ = ٠.','منها نحسب الميل = −أ ÷ ب والجزأين المقطوعين من المحورين.'],
+['صيغة المقطعين','اكتب معادلة المستقيم الذي يقطع من المحورين السيني والصادي الجزأين أ و ب.','س ÷ أ + ص ÷ ب = ١.','أ الجزء المقطوع من محور السينات، وب من محور الصادات.'],
+['طول العمود','ما طول العمود من النقطة (س₁، ص₁) على المستقيم أ س + ب ص + جـ = ٠؟','|أ س₁ + ب ص₁ + جـ| ÷ √(أ² + ب²).','البعد العمودي هو أقصر مسافة بين النقطة والمستقيم.'],
+['المسافة بين نقطتين','اكتب صيغة المسافة بين النقطتين (س١، ص١) و(س٢، ص٢).','√[(س٢ − س١)² + (ص٢ − ص١)²].','تطبيق مباشر لنظرية فيثاغورس على المستوى الإحداثي.'],
+['نقطة المنتصف','اكتب صيغة نقطة منتصف القطعة الواصلة بين (س١، ص١) و(س٢، ص٢).','((س١ + س٢) ÷ ٢، (ص١ + ص٢) ÷ ٢).','متوسط الإحداثيين السيني والصادي للنقطتين.'],
+['الميل والنقطة','اكتب معادلة المستقيم الذي ميله م ويمر بالنقطة (س١، ص١).','ص − ص١ = م (س − س١).','صيغة الميل والنقطة من أكثر الصيغ استخدامًا.'],
+['التوازي','ما شرط توازي مستقيمين؟','أن يكون ميلاهما متساويين (م١ = م٢).','المستقيمان المتوازيان لا يتقاطعان فميلاهما واحد.'],
+['التعامد','ما شرط تعامد مستقيمين؟','حاصل ضرب ميليهما يساوي −١ (م١ × م٢ = −١).','ميل كل منهما مقلوب الآخر بالإشارة المعكوسة.'],
+['الميل والمقطع الصادي','اكتب معادلة المستقيم بصيغة الميل والمقطع الصادي.','ص = م س + جـ.','م الميل، وجـ المقطع الصادي (تقاطع المستقيم مع محور الصادات).']
+],
+[ // ٠٣ المتباينات والبرمجة الخطية
+['القيمة المطلقة','حل المعادلة |س − ٣| = ٥.','س = ٨ أو س = −٢.','|ع| = ك (ك ≥ ٠) تعني ع = ك أو ع = −ك.'],
+['متباينة القيمة المطلقة','حل المتباينة |س| < ٥.','−٥ < س < ٥.','|ع| < ك (ك > ٠) تعني −ك < ع < ك.'],
+['المتباينات','ماذا يحدث لإشارة المتباينة عند الضرب في عدد سالب؟','تنقلب إشارة المتباينة.','نعكس اتجاهها عند الضرب أو القسمة على عدد سالب.'],
+['متباينة بمتغيرين','كيف نمثل بيانيًا المتباينة الخطية بمتغيرين؟','نرسم المستقيم الحدّي ثم نظلل نصف المستوى الذي يحقق المتباينة.','خط متصل للمتباينة ≤ أو ≥، وخط متقطع للمتباينة < أو >.'],
+['البرمجة الخطية','ماذا تمثل منطقة الحل في البرمجة الخطية؟','مجموعة النقاط التي تحقق جميع القيود معًا.','تُسمّى منطقة الحلول الممكنة.'],
+['الدالة الهدف','ما الهدف من الدالة الهدف؟','تعظيم أو تصغير كمية مع الالتزام بالقيود.','نختبر قيمها عند رؤوس منطقة الحلول الممكنة.'],
+['رؤوس المنطقة','لماذا نختبر الدالة الهدف عند رؤوس منطقة الحلول فقط؟','لأن القيمة المثلى (العظمى أو الصغرى) تقع دائمًا عند إحدى الرؤوس.','خاصية أساسية في البرمجة الخطية توفّر فحص كل نقطة.'],
+['نظام متباينات','كيف نجد منطقة الحل لنظام من عدة متباينات؟','نأخذ تقاطع مناطق حل كل متباينة على حدة.','منطقة الحل النهائية تحقق كل القيود في نفس الوقت.'],
+['المنطقة غير المحدودة','متى تكون منطقة الحلول الممكنة غير محدودة؟','عندما لا تُغلقها القيود من كل الجهات فتمتد إلى ما لا نهاية في اتجاه واحد على الأقل.','في هذه الحالة قد لا توجد قيمة عظمى للدالة الهدف.'],
+['نوع الخط الحدي','متى يكون المستقيم الحدّي خطًا متصلًا لا متقطعًا؟','عندما تكون المتباينة ≤ أو ≥ (تشمل حدود المستقيم نفسه).','الخط المتصل يعني أن نقاط المستقيم نفسه جزء من الحل.']
+],
+[ // ٠٤ الإحصاء
+['الوسط الحسابي','أوجد الوسط الحسابي للقيم ٤، ٦، ٨.','٦.','مجموع القيم مقسومًا على عددها.'],
+['الوسيط','ما الوسيط للقيم المرتبة ٣، ٥، ٧، ٩، ١١؟','٧.','القيمة الوسطى في القيم المرتبة.'],
+['المنوال','ما المنوال في ٢، ٣، ٣، ٤، ٥؟','٣.','القيمة الأكثر تكرارًا.'],
+['التكرار','ماذا يمثل مجموع التكرارات؟','عدد المشاهدات أو أفراد المجتمع.','جمع التكرارات يعطينا حجم البيانات.'],
+['الوسط للبيانات المبوبة','كيف نحسب الوسط الحسابي لبيانات مبوبة في فئات؟','نأخذ مركز كل فئة، نضربه في تكرارها، ونجمع النواتج ثم نقسم على مجموع التكرارات.','مركز الفئة يمثّل جميع قيمها تقريبًا.'],
+['الفئة المنوالية','ما الفئة المنوالية في جدول تكراري؟','الفئة التي تحمل أعلى تكرار.','تقابل المنوال في البيانات غير المبوبة.'],
+['الفئة الوسيطية','كيف نحدد الفئة الوسيطية؟','هي الفئة التي يقع عندها نصف مجموع التكرارات في التكرار المتجمع الصاعد.','منها نحسب الوسيط بصيغة الفئات المبوبة.'],
+['التكرار المتجمع الصاعد','ماذا يمثل التكرار المتجمع الصاعد عند فئة معينة؟','عدد المشاهدات التي قيمتها أقل من أو تساوي الحد الأعلى لتلك الفئة.','نجمع تكرار كل فئة مع تكرارات الفئات السابقة لها.'],
+['المدى','كيف نحسب المدى لمجموعة بيانات؟','أكبر قيمة − أصغر قيمة.','مقياس بسيط لتشتت البيانات.'],
+['طول الفئة','كيف نحسب طول الفئة في جدول تكراري؟','الحد الأعلى للفئة − الحد الأدنى لها.','يُفترض تساوي طول جميع الفئات في الجدول المنتظم.']
+],
+[ // ٠٥ حساب المثلثات
+['النسب المثلثية','ما قيمة جا ٣٠°؟','١ ÷ ٢.','من قيم الزوايا الخاصة.'],
+['المتطابقات','اكتب متطابقة فيثاغورس الأساسية.','جا² هـ + جتا² هـ = ١.','تربط الجيب وجيب التمام.'],
+['مجموع زاويتين','اكتب صيغة جا(أ + ب).','جا أ جتا ب + جتا أ جا ب.','متطابقة جيب مجموع زاويتين.'],
+['ضعف الزاوية','اكتب صيغة جا ٢هـ.','٢ جا هـ جتا هـ.','حالة خاصة من جا(أ + ب) عندما أ = ب = هـ.'],
+['فرق زاويتين','اكتب صيغة جا(أ − ب).','جا أ جتا ب − جتا أ جا ب.','متطابقة جيب الفرق بين زاويتين.'],
+['جتا مجموع زاويتين','اكتب صيغة جتا(أ + ب).','جتا أ جتا ب − جا أ جا ب.','متطابقة جيب التمام لمجموع زاويتين.'],
+['نصف الزاوية','اكتب صيغة جا²(هـ ÷ ٢).','(١ − جتا هـ) ÷ ٢.','تُشتق من صيغة ضعف الزاوية لجيب التمام.'],
+['الزوايا المنتسبة','ما قيمة جا(١٨٠° − هـ)؟','جا هـ.','الزوايا المنتسبة تربط زوايا الربع الثاني بزوايا الربع الأول.'],
+['ظا مجموع زاويتين','اكتب صيغة ظا(أ + ب).','(ظا أ + ظا ب) ÷ (١ − ظا أ ظا ب).','متطابقة الظل لمجموع زاويتين.'],
+['معادلة مثلثية','حل المعادلة ٢ جا هـ − ١ = ٠ لـ ٠° ≤ هـ ≤ ٣٦٠°.','هـ = ٣٠° أو هـ = ١٥٠°.','نحل جا هـ = ١ ÷ ٢ في الربعين الأول والثاني حيث الجيب موجب.']
+],
+[ // ٠٦ التحويلات الهندسية
+['الانعكاس عن محور السينات','ما صورة النقطة (س، ص) بالانعكاس حول محور السينات؟','(س، −ص).','يتغير إحداثي الصاد فقط.'],
+['الانتقال','ما صورة النقطة (س، ص) بالانتقال (أ، ب)؟','(س + أ، ص + ب).','نضيف مركبتي متجه الانتقال.'],
+['الدوران','ماذا يحافظ عليه الدوران حول نقطة؟','المسافات وقياسات الزوايا والشكل العام.','الدوران لا يغيّر القياس.'],
+['التناظر','ماذا يعني أن للشكل محور تناظر؟','ينطبق نصفا الشكل عند طيه حول المحور.','يقسم الشكل إلى صورتين متطابقتين.'],
+['الانعكاس عن محور الصادات','ما صورة النقطة (س، ص) بالانعكاس حول محور الصادات؟','(−س، ص).','يتغير إحداثي السين فقط.'],
+['الانعكاس حول نقطة الأصل','ما صورة النقطة (س، ص) بالانعكاس حول نقطة الأصل؟','(−س، −ص).','تتغير إشارتا الإحداثيين معًا.'],
+['الانعكاس حول ص = س','ما صورة النقطة (س، ص) بالانعكاس حول المستقيم ص = س؟','(ص، س).','تتبادل قيمتا الإحداثيين مكانيهما.'],
+['التطابق الهندسي','ماذا نسمّي التحويل الذي يحافظ على المسافات بين النقاط؟','تحويلًا تطابقيًا (إيزومتري).','الانعكاس والانتقال والدوران كلها تحويلات تطابقية.'],
+['تركيب تحويلين','كيف نجد صورة نقطة بتركيب تحويلين متتاليين؟','نطبّق التحويل الأول على النقطة، ثم نطبّق الثاني على الصورة الناتجة.','الترتيب مهم؛ تبديل التحويلين قد يغيّر النتيجة.'],
+['دوران ٩٠° حول الأصل','ما صورة النقطة (س، ص) بالدوران ٩٠° عكس اتجاه الساعة حول نقطة الأصل؟','(−ص، س).','قاعدة ثابتة لدوران ٩٠° حول الأصل.']
+],
+[ // ٠٧ الأعداد المركّبة
+['العامل التخيلي','ما تعريف العامل التخيلي ت؟','ت² = −١، أو ت = √(−١).','أساس تكوين الأعداد المركّبة.'],
+['قوى ت','ما قيمة ت⁴؟','١.','قوى ت تتكرر كل أربع قوى.'],
+['العدد المركّب','اكتب الصورة العامة للعدد المركّب.','ع = أ + ب ت.','أ الجزء الحقيقي، وب الجزء التخيلي.'],
+['المرافق','ما مرافق العدد أ + ب ت؟','أ − ب ت.','نغيّر إشارة الجزء التخيلي.'],
+['جمع الأعداد المركّبة','اجمع (٢ + ٣ت) و(١ − ٤ت).','٣ − ت.','نجمع الأجزاء الحقيقية معًا والأجزاء التخيلية معًا.'],
+['ضرب الأعداد المركّبة','اضرب (١ + ت)(٢ − ت).','٣ + ت.','نوزّع كما في الجبر، ثم نعوّض ت² = −١.'],
+['مقياس العدد المركّب','ما مقياس العدد أ + ب ت؟','√(أ² + ب²).','يمثّل بعد النقطة (أ، ب) عن نقطة الأصل في مستوى الأعداد المركّبة.'],
+['قسمة الأعداد المركّبة','كيف نقسم عددين مركّبين؟','نضرب طرفي الكسر في مرافق المقام لنجعل المقام حقيقيًا.','خطوة أساسية للتخلص من ت في المقام.'],
+['تساوي عددين مركّبين','متى يتساوى عددان مركّبان أ + ب ت وجـ + د ت؟','عندما أ = جـ وب = د.','يجب أن يتساوى الجزآن الحقيقي والتخيلي كل على حدة.'],
+['معادلة تربيعية مميزها سالب','كيف نكتب جذري المعادلة س² + ١ = ٠؟','س = ت أو س = −ت.','مميز المعادلة سالب فتكون الجذور أعدادًا مركّبة تخيلية.']
+],
+[ // ٠٨ المتتاليات
+['المتتالية الحسابية','ما الحد العام للمتتالية الحسابية؟','حن = أ + (ن − ١) د.','د هو الفرق المشترك.'],
+['مجموع حسابي','ما قانون مجموع ن حدًا من متتالية حسابية؟','جن = ن ÷ ٢ × (أ + ل).','ل هو الحد الأخير.'],
+['المتتالية الهندسية','ما الحد العام للمتتالية الهندسية؟','حن = أ × ر^(ن − ١).','ر هو أساس المتتالية (النسبة المشتركة).'],
+['مجموع هندسي','ما مجموع أول ن حدًا من متتالية هندسية؟','جن = أ(رⁿ − ١) ÷ (ر − ١)، حيث ر ≠ ١.','صيغة المجموع الهندسي المنتهي.'],
+['الوسط الحسابي بين حدين','ما الوسط الحسابي بين العددين أ وب؟','(أ + ب) ÷ ٢.','هو الحد الذي يجعل أ، الوسط، ب متتالية حسابية.'],
+['الوسط الهندسي بين حدين','ما الوسط الهندسي بين العددين الموجبين أ وب؟','√(أ ب).','هو الحد الذي يجعل أ، الوسط، ب متتالية هندسية.'],
+['الصيغة الارتدادية','ما معنى تعريف متتالية بصيغة ارتدادية؟','كل حد يُعرَّف بدلالة الحد أو الحدود التي تسبقه مباشرة.','نحتاج أيضًا لمعرفة الحد أو الحدود الأولى للبدء.'],
+['المتتالية اللانهائية المتقاربة','متى يكون لمتتالية هندسية لانهائية مجموع محدود، وما قانونه؟','عندما |ر| < ١، ومجموعها = أ ÷ (١ − ر).','إذا |ر| ≥ ١ يتزايد المجموع بلا نهاية ولا يتقارب.'],
+['الفرق المشترك','ما صفة الفرق المشترك د في المتتالية الحسابية؟','ثابت بين كل حد والحد الذي يليه (حن₊١ − حن = د).','هذا الثبات هو ما يميّز المتتالية الحسابية.'],
+['النسبة المشتركة','ما صفة النسبة المشتركة ر في المتتالية الهندسية؟','ثابتة بين كل حد والحد الذي يليه (حن₊١ ÷ حن = ر).','هذا الثبات هو ما يميّز المتتالية الهندسية.']
+]];
+const QS=[],QUNIT=[],UNIT_START=[];
+(()=>{let acc=0;UNIT_Q.forEach((arr,ui)=>{UNIT_START.push(acc);arr.forEach(q=>{QS.push(q);QUNIT.push(ui)});acc+=arr.length})})();
+const AR=s=>String(s).replace(/[0-9]/g,d=>'٠١٢٣٤٥٦٧٨٩'[d]);
+const PAD=n=>AR(String(n).padStart(2,'0'));
+const fmt=(n,dp=2)=>{if(!isFinite(n))return '—';let v=Math.round(n*10**dp)/10**dp;if(Object.is(v,-0))v=0;let s=Math.abs(v)>=1e7?v.toExponential(2):String(v);return '\u2066'+AR(s.replace('-','−').replace('.','٫'))+'\u2069'};
+const gcd=(a,b)=>{a=Math.abs(a);b=Math.abs(b);while(b){[a,b]=[b,a%b]}return a||1};
+const frac=(n,d)=>{if(d<0){n=-n;d=-d}const g=gcd(n,d);n/=g;d/=g;return d===1?fmt(n):'\u2066'+AR((n<0?'−':'')+Math.abs(n)+'/'+d)+'\u2069'};
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const unitOf=id=>QUNIT[id-1];
+const KEY='bnh-state';
+const norm=S=>({name:S.name||'طالب الرياضيات',solved:S.solved||[],correct:S.correct||[],review:S.review||[],points:S.points||0,quizDone:!!S.quizDone});
+const LETTERS=['أ','ب','جـ','د'];
+const MUTED='color-mix(in srgb,var(--color-text) 72%,transparent)';
+const sq=(x,y,r=5)=>`M${x-r} ${y-r}h${2*r}v${2*r}h${-2*r}Z`;
+
+class Component extends DCLogic {
+  state = (()=>{let S={};try{S=JSON.parse(localStorage.getItem(KEY)||'{}')}catch(e){}
+    return {page:localStorage.getItem('bnh-page')||this.props.startPage||'home',S:norm(S),unit:'all',term:'',open:{},p:0,quiz:null,
+      lab:'exp',ea:1,eb:2,x1:-3,y1:-2,x2:3,y2:2,seq:'a',s1:2,sd:3,sr:2,sn:8,toast:'',toastOn:false,confirmReset:false}})();
+
+  componentDidMount(){
+    this.onScroll=()=>{if(this.state.page!=='home'||!this.mapEl)return;const r=this.mapEl.getBoundingClientRect();const tot=r.height-window.innerHeight;const p=Math.max(0,Math.min(1,tot>0?-r.top/tot:0));if(Math.abs(p-this.state.p)>0.004)this.setState({p})};
+    this.onKey=e=>{const t=e.target;if(t&&/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))return;const q=this.state.quiz;if(this.state.page!=='quiz'||!q||q.done)return;const k='١٢٣٤'.indexOf(e.key)>-1?'١٢٣٤'.indexOf(e.key):'1234'.indexOf(e.key);if(k>-1){this.pick(k);e.preventDefault()}else if(e.key==='Enter'){this.quizAction();e.preventDefault()}};
+    window.addEventListener('scroll',this.onScroll,true);window.addEventListener('resize',this.onScroll);window.addEventListener('keydown',this.onKey);
+    this.onScroll();
+  }
+  componentWillUnmount(){window.removeEventListener('scroll',this.onScroll,true);window.removeEventListener('resize',this.onScroll);window.removeEventListener('keydown',this.onKey);clearTimeout(this.tt)}
+  mapRef=el=>{this.mapEl=el;if(el&&this.onScroll)requestAnimationFrame(this.onScroll)};
+  save(S){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}this.setState({S})}
+  show(msg){clearTimeout(this.tt);this.setState({toast:msg,toastOn:true});this.tt=setTimeout(()=>this.setState({toastOn:false}),2200)}
+  go(page){try{localStorage.setItem('bnh-page',page)}catch(e){}this.setState({page,p:0});window.scrollTo(0,0)}
+  goUnit(u){this.setState({unit:u,term:'',open:{}});this.go('bank')}
+  qLen(){return Math.max(3,Math.min(10,this.props.quizLength??5))}
+  pct(u){return Math.round(this.state.S.correct.filter(id=>unitOf(id)===u).length/UNIT_Q[u].length*100)}
+  know(id){const S={...this.state.S};const first=!S.correct.includes(id);S.correct=first?[...S.correct,id]:S.correct;S.solved=S.solved.includes(id)?S.solved:[...S.solved,id];S.review=S.review.filter(x=>x!==id);if(first)S.points+=2;this.save(S);this.show(first?'أحسنت! +٢ نقطة':'السؤال مسجّل في تقدمك')}
+  review(id){const S={...this.state.S};S.correct=S.correct.filter(x=>x!==id);S.solved=S.solved.includes(id)?S.solved:[...S.solved,id];S.review=S.review.includes(id)?S.review:[...S.review,id];this.save(S);this.show('أُضيف إلى قائمة المراجعة')}
+  startQuiz=()=>{const n=this.qLen();const ids=shuffle(QS.map((_,i)=>i+1)).slice(0,n);const opts=ids.map(id=>{const u=unitOf(id),start=UNIT_START[u],count=UNIT_Q[u].length,correct=QS[id-1][2],others=[];for(let k=0;k<count;k++){const idx=start+k;if(idx!==id-1)others.push(QS[idx][2])}return shuffle([correct,...shuffle(others).slice(0,3)])});this.setState({quiz:{ids,opts,i:0,sel:null,checked:false,score:0,right:0,done:false}})};
+  pick(k){const q=this.state.quiz;if(!q||q.checked)return;this.setState({quiz:{...q,sel:k}})}
+  quizAction=()=>{const q=this.state.quiz;if(!q)return;if(!q.checked){if(q.sel==null){this.show('اختر إجابة أولًا');return}const id=q.ids[q.i];const ok=q.opts[q.i][q.sel]===QS[id-1][2];const S={...this.state.S};if(!S.solved.includes(id))S.solved=[...S.solved,id];if(ok){if(!S.correct.includes(id))S.correct=[...S.correct,id];S.review=S.review.filter(x=>x!==id);S.points+=5}else if(!S.review.includes(id))S.review=[...S.review,id];this.save(S);this.setState({quiz:{...q,checked:true,score:q.score+(ok?5:0),right:q.right+(ok?1:0),lastOk:ok}});return}
+    if(q.i<q.ids.length-1){this.setState({quiz:{...q,i:q.i+1,sel:null,checked:false}});return}
+    const S={...this.state.S,quizDone:true};this.save(S);this.setState({quiz:{...q,done:true}});this.show('اكتمل الاختبار — فُتح رمز التحدي')};
+
+  renderVals(){
+    const st=this.state,S=st.S,page=st.page,n=this.qLen();
+    const nav=[['home','الرئيسية'],['bank','بنك الأسئلة'],['quiz','اختبر نفسك'],['lab','المختبر'],['dash','لوحتي']].map(([k,l])=>({label:l,go:()=>this.go(k),color:page===k?'var(--color-accent-700)':'var(--color-text)',line:page===k?'inset 0 -2px 0 var(--color-accent)':'none'}));
+    const pcts=UNITS.map((_,i)=>this.pct(i));
+    const unlocked=pcts.filter(x=>x>=100).length+(S.quizDone?1:0);
+    const acc=S.solved.length?Math.round(S.correct.length/S.solved.length*100):0;
+    const levelText=S.points>=100?'متقن المنهج':S.points>=50?'في منتصف الطريق':'بداية الطريق';
+    // home map
+    const idx=Math.min(7,Math.floor(st.p*8));const U=UNITS[idx];
+    const activeUnit={num:PAD(idx+1),title:U.t,desc:U.d,why:U.w,pages:'صفحات الكتاب '+U.p,qCount:AR(UNIT_Q[idx].length),pctLabel:AR(pcts[idx])+'٪ متقن',pctW:pcts[idx]+'%',go:()=>this.goUnit(idx)};
+    const unitRows=UNITS.map((u,i)=>({num:PAD(i+1),title:u.t,pctLabel:AR(pcts[i])+'٪',op:i===idx?1:0.55,weight:i===idx?600:400,go:()=>this.goUnit(i)}));
+    // bank
+    const term=st.term.trim();
+    const list=QS.map((x,i)=>({x,id:i+1})).filter(o=>(st.unit==='all'||unitOf(o.id)===st.unit)&&(!term||(o.x.join(' ')+' '+UNITS[unitOf(o.id)].t).includes(term)));
+    const bankItems=list.map(({x,id})=>{const open=!!st.open[id];const c=S.correct.includes(id),r=S.review.includes(id);return {id,kicker:`الوحدة ${AR(unitOf(id)+1)} · ${x[0]}`,q:x[1],a:x[2],idea:x[3],open,toggleLabel:open?'إخفاء الإجابة':'إظهار الإجابة',
+      toggle:()=>this.setState(s=>({open:{...s.open,[id]:!s.open[id]}})),know:()=>this.know(id),review:()=>this.review(id),
+      status:c?'عرفتها ✓':r?'للمراجعة':'جديد',tagClass:c?'tag-accent':r?'tag-neutral':'tag-outline'}});
+    const chips=[{k:'all',label:'كل الوحدات'}].concat(UNITS.map((u,i)=>({k:i,label:`${AR(i+1)} · ${u.s}`}))).map(c=>{const on=st.unit===c.k;return {label:c.label,go:()=>this.setState({unit:c.k}),border:on?'var(--color-accent)':'var(--color-divider)',bg:on?'var(--color-accent)':'transparent',fg:on?'var(--color-bg)':'var(--color-text)'}});
+    // quiz
+    const q=st.quiz;let quizVals={quizIdle:!q,quizRunning:!!q&&!q.done,quizDoneView:!!q&&q.done,quizW:'0%',quizCount:`${AR(n)} أسئلة`,quizUnit:'اختبار شامل',options:[],quizChecked:false};
+    if(q){const id=q.ids[q.i],QQ=QS[id-1],ans=QQ[2];
+      quizVals={...quizVals,quizW:((q.done?q.ids.length:q.i+(q.checked?1:0))/q.ids.length*100)+'%',quizCount:q.done?'انتهى الاختبار':`السؤال ${AR(q.i+1)} من ${AR(q.ids.length)}`,quizUnit:q.done?'النتيجة':UNITS[unitOf(id)].t,
+        quizTopic:QQ[0],quizQ:QQ[1],quizChecked:q.checked,feedbackTitle:q.lastOk?'أحسنت! +٥ نقاط.':'راجِع الفكرة:',feedbackIdea:q.lastOk?QQ[3]:`الإجابة الصحيحة: ${ans} ${QQ[3]}`,quizScore:AR(q.score),
+        quizActionLabel:!q.checked?'تحقق من الإجابة':q.i<q.ids.length-1?'السؤال التالي ←':'عرض النتيجة',
+        options:q.opts[q.i].map((label,k)=>{const sel=q.sel===k,right=label===ans;let border='var(--color-divider)',bg='transparent',fg='var(--color-text)',mark='';
+          if(!q.checked){if(sel){border='var(--color-accent)';bg='var(--color-accent-100)'}}
+          else if(right){border='var(--color-accent-700)';bg='var(--color-accent-100)';fg='var(--color-accent-900)';mark='✓ الصحيحة'}
+          else if(sel){border='var(--color-neutral-700)';bg='var(--color-neutral-200)';fg='var(--color-neutral-800)';mark='✗ إجابتك'}
+          else fg='var(--color-neutral-600)';
+          return {label,letter:LETTERS[k],border,bg,fg,mark,pick:()=>this.pick(k)}}),
+        quizSummary:[{label:'إجابات صحيحة',value:`${AR(q.right)} / ${AR(q.ids.length)}`},{label:'نقاط هذا الاختبار',value:AR(q.score)},{label:'مجموع نقاطك',value:AR(S.points)}]}}
+    // lab tabs
+    const tab=(cur,k)=>({bg:cur===k?'var(--color-accent)':'transparent',fg:cur===k?'var(--color-bg)':'var(--color-text)',hover:cur===k?'var(--color-accent-600)':'color-mix(in srgb,var(--color-text) 7%,transparent)'});
+    const labTabs=[['exp','الدالة الأسية'],['slope','ميل المستقيم'],['seq','المتتاليات']].map(([k,l])=>({label:l,go:()=>this.setState({lab:k}),...tab(st.lab,k)}));
+    // exp
+    const a=st.ea,b=st.eb,EX=x=>(x+3)*100,EY=y=>310-y*30;
+    let expPath='';for(let i=0;i<=120;i++){const x=-3+i*0.05,y=Math.min(a*Math.pow(b,x),11);expPath+=(i?'L':'M')+EX(x).toFixed(1)+' '+EY(y).toFixed(1)}
+    let expGrid='';for(let x=-3;x<=3;x++)expGrid+=`M${EX(x)} 0V320`;for(let y=0;y<=10;y+=2)expGrid+=`M0 ${EY(y)}H600`;
+    let expMarks=sq(EX(0),EY(a));if(a*b<=10)expMarks+=sq(EX(1),EY(a*b));
+    const expReadouts=[{label:'التقاطع مع محور الصادات',value:`(٠، ${fmt(a)})`},{label:'سلوك الدالة',value:b>1?'متزايدة':b<1?'متناقصة':'ثابتة'},{label:'ص عند س = ٢',value:fmt(a*b*b)},{label:'ص عند س = −١',value:fmt(a/b)}];
+    // slope
+    const {x1,y1,x2,y2}=st,SX=v=>(v+6)*30,SY=v=>360-(v+6)*30,dx=x2-x1,dy=y2-y1;
+    let slopeGrid='';for(let v=-6;v<=6;v++)slopeGrid+=`M${SX(v)} 0V360M0 ${SY(v)}H360`;
+    let slopeLine='',slopeVal,eq;
+    if(dx===0&&dy===0){slopeVal='—';eq='النقطتان متطابقتان'}
+    else if(dx===0){slopeLine=`M${SX(x1)} 0V360`;slopeVal='غير معرّف';eq=`س = ${fmt(x1)}`}
+    else{const m=dy/dx,c=y1-m*x1;slopeLine=`M${SX(-7)} ${SY(m*-7+c)}L${SX(7)} ${SY(m*7+c)}`;slopeVal=frac(dy,dx);
+      const cs=Math.abs(c)<1e-9?'':` ${c>0?'+':'−'} ${Number.isInteger(c)?fmt(Math.abs(c)):frac(Math.abs(Math.round(c*dx)),Math.abs(dx))}`;
+      eq=m===0?`ص = ${fmt(y1)}`:`ص = ${m===1?'':m===-1?'−':slopeVal+' '}س${cs}`}
+    const N=dx*dx+dy*dy,rt=Math.sqrt(N);
+    const slopeReadouts=[{label:'الميل م',value:slopeVal},{label:'معادلة المستقيم',value:eq},{label:'المسافة بين النقطتين',value:Number.isInteger(rt)?fmt(rt):`√${fmt(N)} ≈ ${fmt(rt)}`},{label:'نقطة المنتصف',value:`(${fmt((x1+x2)/2)}، ${fmt((y1+y2)/2)})`}];
+    // sequences
+    const ar=st.seq==='a',s1=st.s1,sn=st.sn,step=ar?st.sd:st.sr;
+    const terms=[];for(let k=0;k<sn;k++)terms.push(ar?s1+k*step:s1*Math.pow(step,k));
+    const sum=terms.reduce((x,y)=>x+y,0),mx=Math.max(1,...terms.map(Math.abs)),neg=terms.some(t=>t<0);
+    const base=neg?130:240,sc=(neg?115:225)/mx,slot=600/sn,bw=Math.min(40,slot*0.6);
+    let seqBars='';terms.forEach((t,k)=>{const h=Math.max(Math.abs(t)*sc,t===0?0:1.5),x=k*slot+(slot-bw)/2;seqBars+=t>=0?`M${x.toFixed(1)} ${(base-h).toFixed(1)}h${bw.toFixed(1)}v${h.toFixed(1)}h${(-bw).toFixed(1)}Z`:`M${x.toFixed(1)} ${base}h${bw.toFixed(1)}v${h.toFixed(1)}h${(-bw).toFixed(1)}Z`});
+    const seqReadouts=[{label:'الحد العام',value:ar?`حن = ${fmt(s1)} + (ن − ١) × ${fmt(step)}`:`حن = ${fmt(s1)} × ${fmt(step)}^(ن − ١)`},{label:`الحد رقم ${AR(sn)}`,value:fmt(terms[sn-1])},{label:`مجموع ${AR(sn)} حدود`,value:fmt(sum)},{label:'الوسط الحسابي للحدود',value:fmt(sum/sn)}];
+    const seqTabs=[['a','حسابية'],['g','هندسية']].map(([k,l])=>({label:l,go:()=>this.setState({seq:k}),...tab(st.seq,k)}));
+    const num=f=>e=>this.setState({[f]:+e.target.value});
+    return {
+      showGrid:this.props.showGrid??true,navItems:nav,initial:(S.name.trim()[0]||'م'),S,
+      isHome:page==='home',isBank:page==='bank',isQuiz:page==='quiz',isLab:page==='lab',isDash:page==='dash',
+      goHome:()=>this.go('home'),goDash:()=>this.go('dash'),goQuiz:()=>this.go('quiz'),goBankAll:()=>this.goUnit('all'),
+      stats:[{label:'الأسئلة المحلولة',value:AR(S.solved.length),note:`من ${AR(QS.length)} سؤالًا`},{label:'نسبة الإتقان',value:AR(acc)+'٪',note:'من إجاباتك'},{label:'رموز الإنجاز',value:`${AR(unlocked)}/٩`,note:'رمز لكل وحدة ورمز للتحدي'},{label:'النقاط',value:AR(S.points),note:levelText}],
+      mapRef:this.mapRef,activeUnit,unitRows,railH:(st.p*100).toFixed(1)+'%',
+      paths:[{kicker:'بنك الأسئلة',title:'مراجعة مركّزة',body:`تصفّح ${AR(QS.length)} سؤالًا بحسب الوحدة، واكشف الإجابة والفكرة الرياضية.`,go:()=>this.goUnit('all')},{kicker:'اختبر نفسك',title:'تحدٍّ سريع',body:`${AR(n)} أسئلة متنوعة بخيارات متعددة، و+٥ نقاط لكل إجابة صحيحة.`,go:()=>this.go('quiz')},{kicker:'المختبر',title:'ارسم وجرّب',body:'الدالة الأسية، ميل المستقيم، والمتتاليات — حرّك القيم وشاهد الرسم يتغيّر.',go:()=>this.go('lab')}],
+      term:st.term,onTerm:e=>this.setState({term:e.target.value}),chips,bankItems,bankEmpty:!bankItems.length,bankCount:`${AR(bankItems.length)} سؤالًا`,bankTitle:st.unit==='all'?'كل الوحدات':UNITS[st.unit].t,
+      ...quizVals,quizIntro:`${AR(n)} أسئلة عشوائية من وحدات الكتاب الثماني. كل إجابة صحيحة تمنحك ٥ نقاط، وإكمال الاختبار يفتح رمز التحدي.`,startQuiz:this.startQuiz,quizAction:this.quizAction,
+      labTabs,labExp:st.lab==='exp',labSlope:st.lab==='slope',labSeq:st.lab==='seq',
+      ea:a,eb:b,eaLabel:fmt(a),ebLabel:fmt(b),onEa:num('ea'),onEb:num('eb'),expPath,expGrid,expMarks,expReadouts,
+      x1,y1,x2,y2,x1L:fmt(x1),y1L:fmt(y1),x2L:fmt(x2),y2L:fmt(y2),onX1:num('x1'),onY1:num('y1'),onX2:num('x2'),onY2:num('y2'),
+      slopeGrid,slopeLine,slopeTri:dx&&dy?`M${SX(x1)} ${SY(y1)}H${SX(x2)}V${SY(y2)}`:'',slopePts:sq(SX(x1),SY(y1))+sq(SX(x2),SY(y2)),slopeReadouts,
+      p1Label:`أ(${fmt(x1)}، ${fmt(y1)})`,p2Label:`ب(${fmt(x2)}، ${fmt(y2)})`,
+      seqTabs,s1,sn,s1L:fmt(s1),snL:fmt(sn),onS1:num('s1'),onSn:num('sn'),stepName:ar?'الفرق المشترك د':'الأساس ر',stepL:fmt(step),stepMin:ar?-3:0.5,stepMax:ar?5:3,stepStep:ar?1:0.5,stepVal:step,onStep:num(ar?'sd':'sr'),
+      seqBars,seqBase:`M0 ${base}H600`,seqTerms:terms.map(t=>fmt(t)).join('، '),seqReadouts,
+      onName:e=>{const S2={...S,name:e.target.value};this.save(S2)},levelText,levelPoints:`${AR(Math.min(S.points,100))} / ١٠٠`,levelW:Math.min(S.points,100)+'%',
+      dashMini:[{label:'محلولة',value:AR(S.solved.length)},{label:'الدقة',value:AR(acc)+'٪'},{label:'للمراجعة',value:AR(S.review.length)}],
+      tokensLabel:`${AR(unlocked)} / ٩`,
+      tokens:UNITS.map((u,i)=>({on:pcts[i]>=100,mark:PAD(i+1),name:u.s,full:u.t})).concat([{on:S.quizDone,mark:'✦',name:'بطل التحدي',full:'أكمل الاختبار'}]).map(t=>({...t,border:t.on?'var(--color-accent)':'var(--color-divider)',bg:t.on?'var(--color-accent-100)':'transparent',fg:t.on?'var(--color-accent-900)':'var(--color-neutral-600)'})),
+      mastery:UNITS.map((u,i)=>({num:PAD(i+1),title:u.t,w:pcts[i]+'%',pctLabel:AR(pcts[i])+'٪',go:()=>this.goUnit(i)})),
+      confirmReset:st.confirmReset,askReset:()=>this.setState({confirmReset:true}),cancelReset:()=>this.setState({confirmReset:false}),stop:e=>e.stopPropagation(),
+      doReset:()=>{const S2=norm({name:S.name});this.save(S2);this.setState({confirmReset:false,quiz:null});this.show('تم مسح التقدم')},
+      toast:st.toast,toastOp:st.toastOn?1:0,toastT:st.toastOn?'translateY(0)':'translateY(8px)'
+    };
+  }
+}
+
+</script>
+</body>
+</html>

@@ -21,7 +21,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <script>if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('./service-worker.js').catch(()=>{})})}</script>
 <style>
-:root{--font-heading:"Barlow Condensed","Noto Kufi Arabic",system-ui,sans-serif;--font-body:"Barlow","IBM Plex Sans Arabic",system-ui,sans-serif}
+:root{--font-heading:"Simplified Arabic","Barlow Condensed","Noto Kufi Arabic",system-ui,sans-serif;--font-body:"Simplified Arabic","Barlow","IBM Plex Sans Arabic",system-ui,sans-serif}
 html{scroll-behavior:smooth}
 body{margin:0;text-wrap:pretty;font-family:var(--font-body);font-weight:600}
 h1,h2,h3,h4{letter-spacing:0 !important;line-height:1.35}
@@ -29,11 +29,23 @@ a{color:var(--color-accent-700)}
 a:hover{color:var(--color-accent-800)}
 input[type=range]{accent-color:var(--color-accent);width:100%;margin:0}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none !important}}
+@keyframes bnhFall{0%{transform:translateY(-30px) rotate(0deg);opacity:0}12%{opacity:1}100%{transform:translateY(170px) rotate(240deg);opacity:0}}
+@keyframes bnhPop{0%{transform:scale(.3) rotate(-10deg);opacity:0}60%{transform:scale(1.1) rotate(3deg);opacity:1}100%{transform:scale(1) rotate(0deg);opacity:1}}
+@keyframes bnhFadeIn{0%{opacity:0;transform:translateY(6px)}100%{opacity:1;transform:translateY(0)}}
+@media print{#bnh-install-banner,nav,.no-print{display:none !important}body{background:#fff}}
 #bnh-install-banner{position:fixed;inset-inline:12px;bottom:12px;z-index:60;display:none;align-items:center;gap:12px;padding:12px 16px;background:var(--color-accent-900);color:#fff;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.25);font-family:"Barlow","IBM Plex Sans Arabic",system-ui,sans-serif}
 #bnh-install-banner.show{display:flex}
 #bnh-install-banner button{font:inherit;font-weight:700;cursor:pointer;border:0;border-radius:6px;padding:8px 14px}
 #bnh-install-btn{background:#fff;color:var(--color-accent-900)}
 #bnh-dismiss-btn{background:transparent;color:#fff;opacity:.75}
+#bnh-install-icon{all:unset;cursor:pointer;width:38px;height:38px;display:none;place-items:center;border:1.5px solid var(--color-accent);border-radius:8px;color:var(--color-accent-700);transition:background .15s}
+#bnh-install-icon.show{display:grid}
+#bnh-install-modal{position:fixed;inset:0;z-index:70;display:none;align-items:center;justify-content:center;background:rgba(20,22,24,.55);padding:20px}
+#bnh-install-modal.show{display:flex}
+#bnh-install-card{background:var(--color-bg);color:var(--color-text);max-width:380px;width:100%;border-radius:14px;padding:26px;display:grid;gap:16px;font-family:"Barlow","IBM Plex Sans Arabic",system-ui,sans-serif;text-align:right}
+#bnh-install-card h3{margin:0;font-size:22px;font-weight:700}
+#bnh-install-card ol{margin:0;padding-inline-start:20px;display:grid;gap:10px;font-size:16px;line-height:1.6;font-weight:600}
+#bnh-install-card button{margin-top:6px;font:inherit;font-weight:700;cursor:pointer;border:0;border-radius:8px;padding:10px 16px;background:var(--color-accent);color:#fff}
 </style>
 <script>
 (function(){
@@ -45,9 +57,23 @@ input[type=range]{accent-color:var(--color-accent);width:100%;margin:0}
     var el=document.getElementById('bnh-install-banner');
     if (el) el.classList.add('show');
   });
+  function isStandalone(){ return window.matchMedia('(display-mode: standalone)').matches; }
   document.addEventListener('DOMContentLoaded', function(){
     var install=document.getElementById('bnh-install-btn');
     var dismiss=document.getElementById('bnh-dismiss-btn');
+    var icon=document.getElementById('bnh-install-icon');
+    if (icon && !isStandalone()){
+      icon.classList.add('show');
+      icon.addEventListener('click', function(){
+        if (deferred) { deferred.prompt(); return; }
+        var modal=document.getElementById('bnh-install-modal');
+        if (modal) modal.classList.add('show');
+      });
+    }
+    var closeBtn=document.getElementById('bnh-install-modal-close');
+    if (closeBtn){
+      closeBtn.addEventListener('click', function(){});
+    }
     if (install) install.addEventListener('click', function(){
       document.getElementById('bnh-install-banner').classList.remove('show');
       if (deferred) deferred.prompt();
@@ -64,6 +90,26 @@ input[type=range]{accent-color:var(--color-accent);width:100%;margin:0}
     <span>ثبّت المنصة على جهازك للوصول السريع والعمل دون إنترنت.</span>
     <button type="button" id="bnh-install-btn">تثبيت</button>
     <button type="button" id="bnh-dismiss-btn">✕</button>
+  </div>
+  <div id="bnh-install-modal">
+    <div id="bnh-install-card" role="dialog">
+      <h3>تثبيت المنصة على الشاشة الرئيسية</h3>
+      <div id="bnh-android-steps" style="display:grid;gap:10px">
+        <ol>
+          <li>افتح قائمة المتصفح (⋮) في الزاوية.</li>
+          <li>اختر "تثبيت التطبيق" أو "إضافة إلى الشاشة الرئيسية".</li>
+          <li>اضغط "تثبيت" للتأكيد.</li>
+        </ol>
+      </div>
+      <div id="bnh-ios-steps" style="display:none;gap:10px">
+        <ol>
+          <li>اضغط أيقونة المشاركة في شريط المتصفح.</li>
+          <li>اختر "إضافة إلى الشاشة الرئيسية" (Add to Home Screen).</li>
+          <li>اضغط "إضافة" في الزاوية.</li>
+        </ol>
+      </div>
+      <button type="button" id="bnh-install-modal-close">فهمت</button>
+    </div>
   </div>
   <div dir="rtl" lang="ar" style="min-height:100vh;background:var(--color-bg);color:var(--color-text);font-family:var(--font-body);position:relative">
   <sc-if value="{{ showGrid }}" hint-placeholder-val="{{ true }}">
@@ -107,6 +153,22 @@ input[type=range]{accent-color:var(--color-accent);width:100%;margin:0}
           <img src="assets/logo.jpg" alt="شعار مجموعة مدارس بن الهيثم الخاصة" style="width:100%;height:auto;mix-blend-mode:multiply">
           <figcaption style="font-size:15px;margin-top:12px;color:color-mix(in srgb,var(--color-text) 72%,transparent)">مجموعة مدارس ابن الهيثم الخاصة</figcaption>
         </figure>
+      </section>
+
+      <section class="blueprint" style="padding:24px;margin-bottom:24px;display:grid;gap:14px">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap">
+          <span style="font-size:16px;font-weight:600;color:var(--color-accent-700)">سؤال اليوم · {{ qod.kicker }}</span>
+          <span style="font-size:15px;color:color-mix(in srgb,var(--color-text) 72%,transparent)">سؤال جديد كل يوم</span>
+        </div>
+        <h3 style="margin:0;font-size:24px;font-weight:700;line-height:1.55">{{ qod.q }}</h3>
+        <sc-if value="{{ qod.open }}" hint-placeholder-val="{{ false }}">
+          <div style="display:grid;gap:8px;padding:14px 16px;background:var(--color-accent-100);border-inline-start:2px solid var(--color-accent);font-size:18px;line-height:1.75">
+            <div style="color:var(--color-accent-900)"><strong>الإجابة: </strong>{{ qod.a }}</div>
+            <div style="color:var(--color-accent-800);font-size:17px"><strong>الفكرة: </strong>{{ qod.idea }}</div>
+          </div>
+        </sc-if>
+        <button type="button" class="btn btn-ghost" onClick="{{ qod.toggle }}" style="justify-self:start">{{ qod.toggleLabel }}</button>
       </section>
 
       <section class="blueprint" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));margin-bottom:24px">
@@ -163,7 +225,7 @@ input[type=range]{accent-color:var(--color-accent);width:100%;margin:0}
         <div style="height:1px;background:var(--color-divider);margin:10px 0 36px"></div>
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:clamp(24px,3vw,44px)">
           <sc-for list="{{ paths }}" as="p" hint-placeholder-count="3">
-            <button type="button" class="blueprint" onClick="{{ p.go }}" style="all:unset;box-sizing:border-box;position:relative;border:1px solid var(--color-divider);padding:24px;cursor:pointer;display:grid;gap:10px;align-content:start;transition:background .15s,border-color .15s,transform .16s" style-hover="background:color-mix(in srgb,var(--color-accent) 6%,transparent);border-color:var(--color-accent)" style-active="transform:scale(0.98)">
+            <button type="button" class="blueprint" onClick="{{ p.go }}" style="all:unset;box-sizing:border-box;position:relative;border:1px solid var(--color-divider);padding:24px;cursor:pointer;display:grid;gap:10px;align-content:start;transition:background .15s,border-color .15s,transform .16s,box-shadow .2s" style-hover="background:color-mix(in srgb,var(--color-accent) 6%,transparent);border-color:var(--color-accent);box-shadow:0px 10px 24px 0px rgba(10,18,32,.3)" style-active="transform:scale(0.98)">
               <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
               <span style="font-size:16px;font-weight:600;color:var(--color-accent-700)">{{ p.kicker }}</span>
               <span style="font-family:var(--font-heading);font-weight:600;font-size:26px;line-height:1.35">{{ p.title }}</span>
@@ -189,9 +251,12 @@ input[type=range]{accent-color:var(--color-accent);width:100%;margin:0}
           <span style="font-size:16px;font-weight:600;color:var(--color-accent-700)">بنك الأسئلة</span>
           <h1 style="margin:4px 0 0;font-size:clamp(32px,4.4vw,52px)">{{ bankTitle }}</h1>
         </div>
-        <span class="tag tag-accent">{{ bankCount }}</span>
+        <div style="display:flex;align-items:center;gap:10px">
+          <span class="tag tag-accent">{{ bankCount }}</span>
+          <button type="button" class="btn btn-secondary no-print" onClick="{{ printBank }}">طباعة</button>
+        </div>
       </header>
-      <div style="display:grid;gap:14px">
+      <div class="no-print" style="display:grid;gap:14px">
         <input class="input" type="search" placeholder="ابحث في السؤال أو الموضوع…" value="{{ term }}" onChange="{{ onTerm }}" style="max-width:520px;min-height:42px;font-size:18px">
         <div style="display:flex;gap:6px;flex-wrap:wrap">
           <sc-for list="{{ chips }}" as="c" hint-placeholder-count="9">
@@ -204,20 +269,20 @@ input[type=range]{accent-color:var(--color-accent);width:100%;margin:0}
       </sc-if>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,320px),1fr));gap:28px">
         <sc-for list="{{ bankItems }}" as="q" hint-placeholder-count="6">
-          <article class="blueprint" style="padding:22px;display:grid;gap:14px;align-content:start;transition:border-color .15s" style-hover="border-color:color-mix(in srgb,var(--color-accent) 60%,transparent)">
+          <article class="blueprint" style="padding:22px;display:grid;gap:14px;align-content:start;transition:border-color .15s,box-shadow .2s" style-hover="border-color:color-mix(in srgb,var(--color-accent) 60%,transparent);box-shadow:0px 8px 20px 0px rgba(10,18,32,.25)">
             <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
             <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
               <span style="font-size:16px;font-weight:600;color:var(--color-accent-700)">{{ q.kicker }}</span>
               <span class="tag {{ q.tagClass }}">{{ q.status }}</span>
             </div>
-            <h3 style="margin:0;font-size:22px;line-height:1.55">{{ q.q }}</h3>
+            <h3 style="margin:0;font-size:26px;font-weight:700;line-height:1.55">{{ q.q }}</h3>
             <sc-if value="{{ q.open }}" hint-placeholder-val="{{ false }}">
               <div style="display:grid;gap:8px;padding:14px 16px;background:var(--color-accent-100);border-inline-start:2px solid var(--color-accent);font-size:18px;line-height:1.75">
                 <div style="color:var(--color-accent-900)"><strong>الإجابة: </strong>{{ q.a }}</div>
                 <div style="color:var(--color-accent-800);font-size:17px"><strong>الفكرة: </strong>{{ q.idea }}</div>
               </div>
             </sc-if>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:2px">
+            <div class="no-print" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:2px">
               <button type="button" class="btn btn-ghost" onClick="{{ q.toggle }}">{{ q.toggleLabel }}</button>
               <sc-if value="{{ q.open }}" hint-placeholder-val="{{ false }}">
                 <div style="display:flex;gap:8px;margin-inline-start:auto">
@@ -258,7 +323,7 @@ input[type=range]{accent-color:var(--color-accent);width:100%;margin:0}
           <div class="blueprint" style="padding:clamp(24px,4vw,40px);display:grid;gap:10px">
             <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
             <span style="font-size:16px;font-weight:600;color:var(--color-accent-700)">{{ quizTopic }}</span>
-            <h2 style="margin:0;font-size:clamp(24px,3.2vw,34px);line-height:1.55">{{ quizQ }}</h2>
+            <h2 style="margin:0;font-size:clamp(26px,3.6vw,38px);font-weight:700;line-height:1.55">{{ quizQ }}</h2>
           </div>
           <div style="display:grid;gap:10px">
             <sc-for list="{{ options }}" as="o" hint-placeholder-count="4">
@@ -282,6 +347,15 @@ input[type=range]{accent-color:var(--color-accent);width:100%;margin:0}
       <sc-if value="{{ quizDoneView }}" hint-placeholder-val="{{ false }}">
         <div class="blueprint" style="padding:clamp(28px,5vw,48px);display:grid;gap:22px">
           <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+          <div style="position:relative;height:50px;margin-bottom:-20px;overflow:hidden" aria-hidden="true">
+            <span style="position:absolute;inset-inline-start:4%;top:0;width:9px;height:9px;background:var(--color-accent);animation:bnhFall 1.5s ease-in .05s 1 both"></span>
+            <span style="position:absolute;inset-inline-start:16%;top:0;width:7px;height:7px;background:var(--color-accent-2-600);animation:bnhFall 1.7s ease-in .25s 1 both"></span>
+            <span style="position:absolute;inset-inline-start:30%;top:0;width:8px;height:8px;background:var(--color-accent-400);animation:bnhFall 1.4s ease-in .1s 1 both"></span>
+            <span style="position:absolute;inset-inline-start:44%;top:0;width:6px;height:6px;background:var(--color-accent-2-400);animation:bnhFall 1.8s ease-in .35s 1 both"></span>
+            <span style="position:absolute;inset-inline-start:58%;top:0;width:9px;height:9px;background:var(--color-accent-600);animation:bnhFall 1.5s ease-in .15s 1 both"></span>
+            <span style="position:absolute;inset-inline-start:72%;top:0;width:7px;height:7px;background:var(--color-accent-2-500);animation:bnhFall 1.6s ease-in .3s 1 both"></span>
+            <span style="position:absolute;inset-inline-end:6%;top:2px;width:40px;height:40px;border:2px solid var(--color-accent);display:grid;place-items:center;font-family:var(--font-heading);font-weight:700;font-size:22px;color:var(--color-accent-700);background:var(--color-bg);animation:bnhPop .5s cubic-bezier(.34,1.56,.64,1) .2s both">✓</span>
+          </div>
           <h1 style="margin:0;font-size:clamp(34px,4.6vw,52px)">اكتمل التحدي!</h1>
           <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border:1px solid var(--color-divider)">
             <sc-for list="{{ quizSummary }}" as="t" hint-placeholder-count="3">
@@ -294,6 +368,7 @@ input[type=range]{accent-color:var(--color-accent);width:100%;margin:0}
           <p style="margin:0;font-size:19px;line-height:1.75;color:color-mix(in srgb,var(--color-text) 78%,transparent)">أحسنت على إتمام الاختبار. عد إلى بنك الأسئلة لتثبيت المفاهيم التي تحتاج مراجعة.</p>
           <div style="display:flex;gap:10px;flex-wrap:wrap">
             <button type="button" class="btn btn-primary" onClick="{{ startQuiz }}" style="padding:10px 20px">إعادة الاختبار</button>
+            <button type="button" class="btn btn-secondary" onClick="{{ shareResult }}" style="padding:10px 20px">مشاركة النتيجة</button>
             <button type="button" class="btn btn-secondary" onClick="{{ goBankAll }}" style="padding:10px 20px">بنك الأسئلة</button>
             <button type="button" class="btn btn-ghost" onClick="{{ goDash }}">لوحتي</button>
           </div>
@@ -318,7 +393,7 @@ input[type=range]{accent-color:var(--color-accent);width:100%;margin:0}
       </header>
 
       <sc-if value="{{ labExp }}" hint-placeholder-val="{{ true }}">
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:clamp(24px,4vw,48px);align-items:start">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:clamp(24px,4vw,48px);align-items:start;animation:bnhFadeIn .25s ease both">
           <div class="blueprint" style="padding:24px;display:grid;gap:22px">
             <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
             <div>
@@ -351,7 +426,7 @@ input[type=range]{accent-color:var(--color-accent);width:100%;margin:0}
       </sc-if>
 
       <sc-if value="{{ labSlope }}" hint-placeholder-val="{{ false }}">
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:clamp(24px,4vw,48px);align-items:start">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:clamp(24px,4vw,48px);align-items:start;animation:bnhFadeIn .25s ease both">
           <div class="blueprint" style="padding:24px;display:grid;gap:18px">
             <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
             <span style="font-size:16px;font-weight:600;color:var(--color-accent-700)">الوحدة ٠٢ · الميل ومعادلة المستقيم</span>
@@ -387,7 +462,7 @@ input[type=range]{accent-color:var(--color-accent);width:100%;margin:0}
       </sc-if>
 
       <sc-if value="{{ labSeq }}" hint-placeholder-val="{{ false }}">
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:clamp(24px,4vw,48px);align-items:start">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:clamp(24px,4vw,48px);align-items:start;animation:bnhFadeIn .25s ease both">
           <div class="blueprint" style="padding:24px;display:grid;gap:18px">
             <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
             <span style="font-size:16px;font-weight:600;color:var(--color-accent-700)">الوحدة ٠٨ · المتتاليات</span>
@@ -444,14 +519,15 @@ input[type=range]{accent-color:var(--color-accent);width:100%;margin:0}
             <div style="height:8px;background:var(--color-neutral-200);position:relative"><div style="position:absolute;inset-block:0;inset-inline-start:0;width:{{ levelW }};background:var(--color-accent);transition:width .4s"></div></div>
             <span style="font-size:16px;color:color-mix(in srgb,var(--color-text) 72%,transparent)">+٢ لكل سؤال تعرفه في البنك · +٥ لكل إجابة صحيحة في الاختبار</span>
           </div>
-          <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border:1px solid var(--color-divider)">
-            <sc-for list="{{ dashMini }}" as="s" hint-placeholder-count="3">
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));border:1px solid var(--color-divider)">
+            <sc-for list="{{ dashMini }}" as="s" hint-placeholder-count="4">
               <div style="padding:12px 14px;border-inline-start:1px solid var(--color-divider);margin-inline-start:-1px">
                 <div style="font-size:15px;color:color-mix(in srgb,var(--color-text) 72%,transparent)">{{ s.label }}</div>
                 <div style="font-family:var(--font-heading);font-weight:600;font-size:28px">{{ s.value }}</div>
               </div>
             </sc-for>
           </div>
+          <button type="button" class="btn btn-primary" onClick="{{ startWeak }}" style="justify-self:start" disabled="{{ weakDisabled }}">راجع نقاط ضعفك ({{ weakCount }})</button>
         </section>
 
         <section class="blueprint" style="padding:24px;display:grid;gap:16px">
@@ -523,7 +599,17 @@ const UNIT_Q=[
 ['قسمة اللوغاريثمات','بسّط: لوأ (س ÷ ص).','لوأ س − لوأ ص.','لوغاريثم خارج القسمة يساوي الفرق بين اللوغاريثمين.'],
 ['أس اللوغاريثم','بسّط: لوأ (سⁿ).','ن × لوأ س.','قانون أس اللوغاريثم ينزل الأس معاملًا.'],
 ['معادلة أسية','حل المعادلة ٢^س = ٨.','س = ٣، لأن ٨ = ٢³.','نكتب الطرفين بنفس الأساس ثم نساوي الأسس.'],
-['اللوغاريثم الطبيعي','ما قيمة لن هـ (اللوغاريثم الطبيعي للعدد هـ)؟','١.','لن س = لوهـ س، ولوغاريثم أي عدد لأساس نفسه يساوي ١.']
+['اللوغاريثم الطبيعي','ما قيمة لن هـ (اللوغاريثم الطبيعي للعدد هـ)؟','١.','لن س = لوهـ س، ولوغاريثم أي عدد لأساس نفسه يساوي ١.'],
+['قانون الأساس المتساوي','متى تتساوى الأسس في المعادلة الأسية ب^س = ب^ص؟','عندما س = ص (لنفس الأساس الموجب المختلف عن الواحد).','خاصية تفرّد الدالة الأسية تسمح بمساواة الأسين مباشرة.'],
+['تحويل الأساس','كيف نحول لو₂ ٨ إلى لوغاريثم أساسه ١٠؟','لو₂ ٨ = لو ٨ ÷ لو ٢.','صيغة تغيير الأساس: لوب س = لوجـ س ÷ لوجـ ب.'],
+['نطاق الدالة اللوغاريثمية','ما مجال الدالة ص = لوب س؟','جميع الأعداد الحقيقية الموجبة (س > ٠).','اللوغاريثم غير معرّف للصفر أو الأعداد السالبة.'],
+['مدى الدالة الأسية','ما مدى الدالة ص = ب^س (ب > ٠، ب≠١)؟','جميع الأعداد الحقيقية الموجبة.','الدالة الأسية لا تعطي قيمًا سالبة أو صفرية.'],
+['حل معادلة لوغاريتمية','حل المعادلة لو₂ س = ٣.','س = ٨.','نحول الصورة اللوغاريتمية إلى صورة أسية: س = ٢³.'],
+['اللوغاريثم العشري','ما رمز اللوغاريثم العشري (أساسه ١٠)؟','لو س (بدون كتابة الأساس).','يُكتب دون أساس لأنه الأكثر استخدامًا.'],
+['خاصية لو ١','ما قيمة لوب ١ لأي أساس ب موجب ويساوي ١≠؟','صفر.','لأن ب^٠ = ١ لأي أساس.'],
+['تطبيق: نمو سكاني','مدينة عدد سكانها يتزايد أسيًا؛ أي دالة تصف عدد سكانها بعد س سنوات إذا كان العدد الابتدائي أ ومعدل النمو ر؟','ع(س) = أ (١ + ر)^س.','نموذج النمو الأسي المتراكب سنويًا.'],
+['معادلة أسية بأساسين مختلفين','كيف نحل معادلة مثل ٢^س = ٥؟','نأخذ لوغاريثم الطرفين: س = لو ٥ ÷ لو ٢.','عندما لا يمكن توحيد الأساس، نستخدم اللوغاريثم لحل الأس.'],
+['قانون الجذر اللوغاريتمي','بسّط: لوأ (ⁿ√س).','(١ ÷ ن) لوأ س.','الجذر النوني يعادل أسًا كسريًا ١/ن، فينزل معاملًا.']
 ],
 [ // ٠٢ الهندسة التحليلية
 ['الميل','أوجد ميل المستقيم المار بالنقطتين (١، ٢) و(٣، ٦).','الميل = (٦ − ٢) ÷ (٣ − ١) = ٢.','م = (ص₂ − ص₁) ÷ (س₂ − س₁).'],
@@ -535,7 +621,17 @@ const UNIT_Q=[
 ['الميل والنقطة','اكتب معادلة المستقيم الذي ميله م ويمر بالنقطة (س١، ص١).','ص − ص١ = م (س − س١).','صيغة الميل والنقطة من أكثر الصيغ استخدامًا.'],
 ['التوازي','ما شرط توازي مستقيمين؟','أن يكون ميلاهما متساويين (م١ = م٢).','المستقيمان المتوازيان لا يتقاطعان فميلاهما واحد.'],
 ['التعامد','ما شرط تعامد مستقيمين؟','حاصل ضرب ميليهما يساوي −١ (م١ × م٢ = −١).','ميل كل منهما مقلوب الآخر بالإشارة المعكوسة.'],
-['الميل والمقطع الصادي','اكتب معادلة المستقيم بصيغة الميل والمقطع الصادي.','ص = م س + جـ.','م الميل، وجـ المقطع الصادي (تقاطع المستقيم مع محور الصادات).']
+['الميل والمقطع الصادي','اكتب معادلة المستقيم بصيغة الميل والمقطع الصادي.','ص = م س + جـ.','م الميل، وجـ المقطع الصادي (تقاطع المستقيم مع محور الصادات).'],
+['ميل مستقيم رأسي','ما ميل المستقيم الرأسي (العمودي على محور السينات)؟','غير معرّف.','لأن المقام (س٢ − س١) يساوي صفرًا في هذه الحالة.'],
+['ميل مستقيم أفقي','ما ميل المستقيم الأفقي الموازي لمحور السينات؟','صفر.','لأن ص٢ − ص١ = صفر لكل نقطتين عليه.'],
+['معادلة مستقيم رأسي','اكتب معادلة المستقيم الرأسي المار بالنقطة (٤، ٢).','س = ٤.','كل نقاط المستقيم الرأسي لها نفس إحداثي السين.'],
+['معادلة مستقيم أفقي','اكتب معادلة المستقيم الأفقي المار بالنقطة (٤، ٢).','ص = ٢.','كل نقاط المستقيم الأفقي لها نفس إحداثي الصاد.'],
+['زاوية الميل','ما العلاقة بين الميل م وزاوية الميل هـ التي يصنعها المستقيم مع الاتجاه الموجب لمحور السينات؟','م = ظا هـ.','ميل المستقيم يساوي ظل زاوية ميله.'],
+['المسافة من نقطة الأصل إلى مستقيم','ما طول العمود من نقطة الأصل (٠، ٠) على المستقيم أس + بص + جـ = ٠؟','|جـ| ÷ √(أ² + ب²).','حالة خاصة من صيغة طول العمود عند تعويض س١=٠، ص١=٠.'],
+['استنتاج التوازي','مستقيمان معادلتاهما ٢س + ٣ص = ٦ و٤س + ٦ص = ١٢؛ هل هما متوازيان أم متطابقان؟','متطابقان (نفس المستقيم)، لأن المعادلة الثانية مضاعف للأولى.','عند تبسيط المعادلة الثانية نحصل على المعادلة الأولى بالضبط.'],
+['إيجاد معادلة من ميل ومقطع','اكتب معادلة المستقيم الذي ميله ٣ ويقطع من محور الصادات ٢ وحدات.','ص = ٣س + ٢.','تطبيق مباشر لصيغة الميل والمقطع الصادي.'],
+['تعامد من معادلتين','إذا كان ميل المستقيم الأول ٢/٣، فما ميل المستقيم العمودي عليه؟','−٣/٢.','مقلوب الميل الأول بإشارة معكوسة.'],
+['مساحة مثلث بالإحداثيات','كيف نحسب مساحة مثلث رؤوسه معلومة الإحداثيات؟','باستخدام صيغة المحدّدات (نصف القيمة المطلقة لمجموع حاصلات الضرب التبادلية للإحداثيات).','صيغة عامة تعتمد على إحداثيات الرؤوس الثلاثة مباشرة.']
 ],
 [ // ٠٣ المتباينات والبرمجة الخطية
 ['القيمة المطلقة','حل المعادلة |س − ٣| = ٥.','س = ٨ أو س = −٢.','|ع| = ك (ك ≥ ٠) تعني ع = ك أو ع = −ك.'],
@@ -547,7 +643,16 @@ const UNIT_Q=[
 ['رؤوس المنطقة','لماذا نختبر الدالة الهدف عند رؤوس منطقة الحلول فقط؟','لأن القيمة المثلى (العظمى أو الصغرى) تقع دائمًا عند إحدى الرؤوس.','خاصية أساسية في البرمجة الخطية توفّر فحص كل نقطة.'],
 ['نظام متباينات','كيف نجد منطقة الحل لنظام من عدة متباينات؟','نأخذ تقاطع مناطق حل كل متباينة على حدة.','منطقة الحل النهائية تحقق كل القيود في نفس الوقت.'],
 ['المنطقة غير المحدودة','متى تكون منطقة الحلول الممكنة غير محدودة؟','عندما لا تُغلقها القيود من كل الجهات فتمتد إلى ما لا نهاية في اتجاه واحد على الأقل.','في هذه الحالة قد لا توجد قيمة عظمى للدالة الهدف.'],
-['نوع الخط الحدي','متى يكون المستقيم الحدّي خطًا متصلًا لا متقطعًا؟','عندما تكون المتباينة ≤ أو ≥ (تشمل حدود المستقيم نفسه).','الخط المتصل يعني أن نقاط المستقيم نفسه جزء من الحل.']
+['نوع الخط الحدي','متى يكون المستقيم الحدّي خطًا متصلًا لا متقطعًا؟','عندما تكون المتباينة ≤ أو ≥ (تشمل حدود المستقيم نفسه).','الخط المتصل يعني أن نقاط المستقيم نفسه جزء من الحل.'],
+['حل متباينة خطية بسيطة','حل المتباينة ٢س − ٤ > ٠.','س > ٢.','نجمع ٤ للطرفين ثم نقسم على ٢ (عدد موجب فلا تنعكس الإشارة).'],
+['متباينة القيمة المطلقة (أكبر من)','حل المتباينة |س| > ٣.','س > ٣ أو س < −٣.','|ع| > ك (ك>٠) تعني ع خارج الفترة [−ك، ك].'],
+['تمثيل قيد على متغير واحد','كيف نمثل بيانيًا القيد س ≥ ٠ في مسألة برمجة خطية؟','نظلل المنطقة الواقعة على يمين محور الصادات أو عليه (حيث س موجبة أو صفر).','قيد شائع لأن الكميات الحقيقية (كعدد المنتجات) لا تكون سالبة.'],
+['اختبار نقطة في المتباينة','كيف نتحقق من أي جانب من المستقيم نظلل عند رسم متباينة؟','نعوّض بنقطة اختبار (كنقطة الأصل) في المتباينة؛ فإن تحققت نظلل الجانب الذي تقع فيه.','طريقة عملية وسريعة لتحديد جهة التظليل الصحيحة.'],
+['صياغة قيد من مسألة كلامية','مصنع يصنع س وحدة من منتج أ وص وحدة من منتج ب، وأقصى إنتاج يومي ١٠٠ وحدة؛ ما القيد الرياضي؟','س + ص ≤ ١٠٠.','نترجم الحد الأقصى الكلامي إلى متباينة رياضية مباشرة.'],
+['القيمة العظمى عند رأس','في مسألة تعظيم ربح ر = ٣س + ٢ص، كيف نحدد القيمة العظمى؟','نعوّض إحداثيات كل رأس من منطقة الحلول في ر ونختار أكبر قيمة.','القيمة المثلى تقع دائمًا عند أحد رؤوس منطقة الحلول.'],
+['نظام متباينتين متعامدتين','ما شكل منطقة الحل لنظام: س ≥ ٠ وص ≥ ٠؟','الربع الإحداثي الأول (بما فيه المحورين).','تقاطع نصفي المستويين الموجبين لكل من س وص.'],
+['متباينة لا حل لها','متى لا يكون لنظام متباينات خطية أي حل؟','عندما تكون مناطق حل المتباينات المفردة لا تتقاطع في أي منطقة مشتركة.','يحدث عند تناقض القيود مع بعضها.'],
+['تعظيم أم تصغير','في مسألة تكاليف الإنتاج، هل الدالة الهدف تُعظَّم أم تُصغَّر عادة؟','تُصغَّر (نبحث عن أقل تكلفة ممكنة).','يعتمد نوع الهدف على طبيعة المسألة: الربح يُعظَّم والتكلفة تُصغَّر.']
 ],
 [ // ٠٤ الإحصاء
 ['الوسط الحسابي','أوجد الوسط الحسابي للقيم ٤، ٦، ٨.','٦.','مجموع القيم مقسومًا على عددها.'],
@@ -559,7 +664,17 @@ const UNIT_Q=[
 ['الفئة الوسيطية','كيف نحدد الفئة الوسيطية؟','هي الفئة التي يقع عندها نصف مجموع التكرارات في التكرار المتجمع الصاعد.','منها نحسب الوسيط بصيغة الفئات المبوبة.'],
 ['التكرار المتجمع الصاعد','ماذا يمثل التكرار المتجمع الصاعد عند فئة معينة؟','عدد المشاهدات التي قيمتها أقل من أو تساوي الحد الأعلى لتلك الفئة.','نجمع تكرار كل فئة مع تكرارات الفئات السابقة لها.'],
 ['المدى','كيف نحسب المدى لمجموعة بيانات؟','أكبر قيمة − أصغر قيمة.','مقياس بسيط لتشتت البيانات.'],
-['طول الفئة','كيف نحسب طول الفئة في جدول تكراري؟','الحد الأعلى للفئة − الحد الأدنى لها.','يُفترض تساوي طول جميع الفئات في الجدول المنتظم.']
+['طول الفئة','كيف نحسب طول الفئة في جدول تكراري؟','الحد الأعلى للفئة − الحد الأدنى لها.','يُفترض تساوي طول جميع الفئات في الجدول المنتظم.'],
+['حساسية الوسط للقيم المتطرفة','أي مقياس نزعة مركزية يتأثر أكثر بالقيم الشاذة (المتطرفة)؟','الوسط الحسابي.','لأنه يعتمد على جمع كل القيم، فالقيمة الشاذة تسحبه نحوها.'],
+['مقياس لا يتأثر بالقيم الشاذة','أي مقياس نزعة مركزية لا يتأثر بالقيم المتطرفة؟','الوسيط.','يعتمد فقط على ترتيب القيم لا على حجمها.'],
+['بيانات ذات منوالين','ماذا نسمي البيانات التي لها منوالان؟','بيانات ثنائية المنوال.','تحدث عندما تتكرر قيمتان مختلفتان بأعلى تكرار متساوٍ.'],
+['الوسط الموزون','متى نستخدم الوسط الحسابي الموزون بدل الوسط العادي؟','عندما تكون للقيم أهمية أو أوزان مختلفة (كدرجات مقررات بساعات معتمدة مختلفة).','كل قيمة تُضرب بوزنها قبل الجمع والقسمة على مجموع الأوزان.'],
+['عدد الفئات في جدول تكراري','ما العامل الذي يحدد عدد الفئات المناسب في جدول تكراري؟','حجم البيانات ومدى القيم؛ عدد فئات كبير جدًا أو صغير جدًا يفقد البيانات وضوحها.','لا توجد قاعدة صارمة، لكن التوازن بين التفصيل والوضوح مطلوب.'],
+['التكرار النسبي','ما تعريف التكرار النسبي لفئة؟','تكرار الفئة مقسومًا على مجموع التكرارات الكلي.','يعبّر عن نسبة تلك الفئة من إجمالي البيانات، وغالبًا يُذكر كنسبة مئوية.'],
+['مركز الفئة','كيف نحسب مركز (منتصف) فئة في جدول تكراري؟','(الحد الأدنى + الحد الأعلى) ÷ ٢.','يمثّل قيمة تقديرية لكل بيانات تلك الفئة عند حساب الوسط.'],
+['الوسيط لعدد زوجي من القيم','كيف نحسب الوسيط إذا كان عدد القيم زوجيًا؟','وسط القيمتين الوسطيتين (نجمعهما ونقسم على ٢).','لا توجد قيمة وسطى واحدة عند عدد زوجي من القيم المرتبة.'],
+['أثر تغيير جميع القيم بمقدار ثابت','إذا أضفنا ٥ إلى كل قيمة في مجموعة بيانات، ماذا يحدث للوسط الحسابي؟','يزيد بمقدار ٥ أيضًا.','إضافة ثابت لكل القيم تنعكس بالتساوي على وسطها الحسابي.'],
+['استخدام البيانات المبوبة','لماذا نبوّب البيانات الكبيرة في جداول تكرارية ذات فئات؟','لتسهيل عرضها وتلخيصها وتحليلها بدل التعامل مع كل قيمة على حدة.','التبويب يقلل التعقيد مع الاحتفاظ بصورة عامة دقيقة عن البيانات.']
 ],
 [ // ٠٥ حساب المثلثات
 ['النسب المثلثية','ما قيمة جا ٣٠°؟','١ ÷ ٢.','من قيم الزوايا الخاصة.'],
@@ -571,7 +686,17 @@ const UNIT_Q=[
 ['نصف الزاوية','اكتب صيغة جا²(هـ ÷ ٢).','(١ − جتا هـ) ÷ ٢.','تُشتق من صيغة ضعف الزاوية لجيب التمام.'],
 ['الزوايا المنتسبة','ما قيمة جا(١٨٠° − هـ)؟','جا هـ.','الزوايا المنتسبة تربط زوايا الربع الثاني بزوايا الربع الأول.'],
 ['ظا مجموع زاويتين','اكتب صيغة ظا(أ + ب).','(ظا أ + ظا ب) ÷ (١ − ظا أ ظا ب).','متطابقة الظل لمجموع زاويتين.'],
-['معادلة مثلثية','حل المعادلة ٢ جا هـ − ١ = ٠ لـ ٠° ≤ هـ ≤ ٣٦٠°.','هـ = ٣٠° أو هـ = ١٥٠°.','نحل جا هـ = ١ ÷ ٢ في الربعين الأول والثاني حيث الجيب موجب.']
+['معادلة مثلثية','حل المعادلة ٢ جا هـ − ١ = ٠ لـ ٠° ≤ هـ ≤ ٣٦٠°.','هـ = ٣٠° أو هـ = ١٥٠°.','نحل جا هـ = ١ ÷ ٢ في الربعين الأول والثاني حيث الجيب موجب.'],
+['قيمة جتا ٦٠°','ما قيمة جتا ٦٠°؟','١ ÷ ٢.','من قيم الزوايا الخاصة الأساسية.'],
+['قيمة ظا ٤٥°','ما قيمة ظا ٤٥°؟','١.','عند هذه الزاوية يتساوى الجيب وجيب التمام فيكون الظل واحدًا.'],
+['متطابقة الظل','اكتب ظا هـ بدلالة الجيب وجيب التمام.','ظا هـ = جا هـ ÷ جتا هـ.','تعريف أساسي يربط الدوال المثلثية الثلاث الرئيسية.'],
+['جتا فرق زاويتين','اكتب صيغة جتا(أ − ب).','جتا أ جتا ب + جا أ جا ب.','متطابقة جيب التمام لفرق زاويتين.'],
+['ضعف الزاوية لجيب التمام','اكتب صيغة جتا ٢هـ بدلالة جتا هـ فقط.','٢جتا² هـ − ١.','إحدى الصور الثلاث لمتطابقة جيب تمام ضعف الزاوية.'],
+['حل معادلة مثلثية بسيطة','حل المعادلة جتا هـ = ١ لـ ٠° ≤ هـ ≤ ٣٦٠°.','هـ = ٠° أو هـ = ٣٦٠°.','جيب التمام يساوي ١ فقط عند الزوايا التي تقابل نقطة (١، ٠) على دائرة الوحدة.'],
+['العلامات في الأرباع','في أي ربع تكون قيمة الجيب موجبة والظل سالبًا؟','الربع الثاني.','الجيب موجب في الربعين الأول والثاني، والظل سالب في الثاني والرابع.'],
+['الزوايا المنتسبة لـ٩٠ ناقص هـ','ما قيمة جا(٩٠° − هـ)؟','جتا هـ.','علاقة تكامل الزاويتين المتتامتين بين الجيب وجيب التمام.'],
+['مضاعفة الزاوية للظل','اكتب صيغة ظا ٢هـ بدلالة ظا هـ.','٢ظا هـ ÷ (١ − ظا² هـ).','صيغة ضعف الزاوية للدالة ظا.'],
+['تطبيق: ارتفاع مبنى','رصد زاوية ارتفاع قمة مبنى من نقطة تبعد ٥٠م عن قاعدته فكانت ٣٠°؛ كيف نحسب ارتفاع المبنى؟','الارتفاع = ٥٠ × ظا ٣٠°.','نستخدم الظل لأنه يربط الضلع المقابل (الارتفاع) بالمجاور (المسافة الأفقية).']
 ],
 [ // ٠٦ التحويلات الهندسية
 ['الانعكاس عن محور السينات','ما صورة النقطة (س، ص) بالانعكاس حول محور السينات؟','(س، −ص).','يتغير إحداثي الصاد فقط.'],
@@ -583,7 +708,16 @@ const UNIT_Q=[
 ['الانعكاس حول ص = س','ما صورة النقطة (س، ص) بالانعكاس حول المستقيم ص = س؟','(ص، س).','تتبادل قيمتا الإحداثيين مكانيهما.'],
 ['التطابق الهندسي','ماذا نسمّي التحويل الذي يحافظ على المسافات بين النقاط؟','تحويلًا تطابقيًا (إيزومتري).','الانعكاس والانتقال والدوران كلها تحويلات تطابقية.'],
 ['تركيب تحويلين','كيف نجد صورة نقطة بتركيب تحويلين متتاليين؟','نطبّق التحويل الأول على النقطة، ثم نطبّق الثاني على الصورة الناتجة.','الترتيب مهم؛ تبديل التحويلين قد يغيّر النتيجة.'],
-['دوران ٩٠° حول الأصل','ما صورة النقطة (س، ص) بالدوران ٩٠° عكس اتجاه الساعة حول نقطة الأصل؟','(−ص، س).','قاعدة ثابتة لدوران ٩٠° حول الأصل.']
+['دوران ٩٠° حول الأصل','ما صورة النقطة (س، ص) بالدوران ٩٠° عكس اتجاه الساعة حول نقطة الأصل؟','(−ص، س).','قاعدة ثابتة لدوران ٩٠° حول الأصل.'],
+['الانعكاس حول خط رأسي','ما صورة النقطة (س، ص) بالانعكاس حول المستقيم الرأسي س = ك؟','(٢ك − س، ص).','نعكس إحداثي السين حول قيمة ك مع بقاء الصاد ثابتًا.'],
+['الدوران ١٨٠°','ما صورة النقطة (س، ص) بالدوران ١٨٠° حول نقطة الأصل؟','(−س، −ص).','يعادل الانعكاس حول نقطة الأصل تمامًا.'],
+['دوران ٩٠° مع اتجاه الساعة','ما صورة النقطة (س، ص) بالدوران ٩٠° مع اتجاه الساعة حول نقطة الأصل؟','(ص، −س).','عكس اتجاه دوران ٩٠° عكس اتجاه الساعة.'],
+['التمدد من نقطة الأصل','ماذا يحدث لأبعاد الشكل عند تحويله بعامل تمدد قدره ٢ من نقطة الأصل؟','تتضاعف كل المسافات بمقدار مرتين، بينما تبقى الزوايا كما هي.','هذا النوع من التحويل لا يحافظ على الحجم كما تفعل التحويلات التطابقية.'],
+['مركز الدوران','ما هي النقطة الوحيدة التي لا تتغير موضعها عند الدوران حول نقطة معينة؟','مركز الدوران نفسه.','بقية النقاط تدور حوله بزاوية الدوران المحددة.'],
+['محاور تناظر المستطيل','كم محور تناظر للمستطيل غير المربع؟','محوران (يمران بمنتصفي كل زوج من الأضلاع المتقابلة).','المربع له أربعة محاور تناظر لأن جميع أضلاعه متساوية.'],
+['الانتقال كمتجه','كيف يُعبَّر عن تحويل الانتقال رياضيًا؟','بمتجه ثابت (أ، ب) يُضاف إلى إحداثيي كل نقطة من الشكل.','كل نقاط الشكل تنتقل بنفس المتجه فتحافظ على شكلها واتجاهها.'],
+['تركيب انعكاسين متتاليين','ماذا ينتج عن تركيب انعكاسين متتاليين حول محورين متقاطعين؟','دوران حول نقطة تقاطع المحورين بزاوية تساوي ضعف الزاوية بينهما.','نتيجة مهمة تربط الانعكاس بالدوران.'],
+['نقطة ثابتة في الانتقال','هل يوجد للانتقال أي نقطة ثابتة (لا تتغير)؟','لا، ما لم يكن متجه الانتقال هو المتجه الصفري.','على عكس الدوران والانعكاس، الانتقال يحرك كل نقطة في المستوى.']
 ],
 [ // ٠٧ الأعداد المركّبة
 ['العامل التخيلي','ما تعريف العامل التخيلي ت؟','ت² = −١، أو ت = √(−١).','أساس تكوين الأعداد المركّبة.'],
@@ -595,7 +729,17 @@ const UNIT_Q=[
 ['مقياس العدد المركّب','ما مقياس العدد أ + ب ت؟','√(أ² + ب²).','يمثّل بعد النقطة (أ، ب) عن نقطة الأصل في مستوى الأعداد المركّبة.'],
 ['قسمة الأعداد المركّبة','كيف نقسم عددين مركّبين؟','نضرب طرفي الكسر في مرافق المقام لنجعل المقام حقيقيًا.','خطوة أساسية للتخلص من ت في المقام.'],
 ['تساوي عددين مركّبين','متى يتساوى عددان مركّبان أ + ب ت وجـ + د ت؟','عندما أ = جـ وب = د.','يجب أن يتساوى الجزآن الحقيقي والتخيلي كل على حدة.'],
-['معادلة تربيعية مميزها سالب','كيف نكتب جذري المعادلة س² + ١ = ٠؟','س = ت أو س = −ت.','مميز المعادلة سالب فتكون الجذور أعدادًا مركّبة تخيلية.']
+['معادلة تربيعية مميزها سالب','كيف نكتب جذري المعادلة س² + ١ = ٠؟','س = ت أو س = −ت.','مميز المعادلة سالب فتكون الجذور أعدادًا مركّبة تخيلية.'],
+['قوى ت الدورية','ما قيمة ت⁵؟','ت.','لأن ت⁵ = ت⁴ × ت = ١ × ت = ت.'],
+['قوى ت: ت³','ما قيمة ت³؟','−ت.','ت³ = ت² × ت = −١ × ت = −ت.'],
+['طرح عددين مركّبين','اطرح (٥ + ٢ت) − (٣ − ت).','٢ + ٣ت.','نطرح الأجزاء الحقيقية من بعضها والتخيلية من بعضها.'],
+['ضرب عدد مركّب في عدد حقيقي','اضرب ٣ × (٢ − ٤ت).','٦ − ١٢ت.','نوزّع العدد الحقيقي على الجزءين الحقيقي والتخيلي.'],
+['العدد المركّب الصفري','متى يكون العدد المركّب أ + ب ت صفرًا؟','عندما يكون أ = ٠ وب = ٠ معًا.','يجب أن يتساوى الجزآن الحقيقي والتخيلي مع صفر كل على حدة.'],
+['مقلوب عدد مركّب','ما مقلوب العدد المركّب أ + ب ت (غير الصفري)؟','(أ − ب ت) ÷ (أ² + ب²).','نضرب في المرافق مقسومًا على مربع المقياس.'],
+['التمثيل البياني للعدد المركّب','كيف نمثّل العدد المركّب أ + ب ت بيانيًا في المستوى؟','بنقطة إحداثياتها (أ، ب) في مستوى الأعداد المركّبة.','يُسمى هذا المستوى مستوى أرجاند.'],
+['حل معادلة تربيعية بمميز سالب','حل المعادلة س² + ٢س + ٥ = ٠.','س = −١ + ٢ت أو س = −١ − ٢ت.','نستخدم القانون العام؛ المميز = ٤ − ٢٠ = −١٦ فتظهر ت.'],
+['ضرب عدد مركّب في مرافقه','ما ناتج ضرب أ + ب ت في مرافقه أ − ب ت؟','أ² + ب² (عدد حقيقي).','حاصل الضرب يساوي مربع المقياس، وهو عدد حقيقي دائمًا.'],
+['جمع الأعداد المركّبة بيانيًا','كيف نمثّل جمع عددين مركّبين بيانيًا؟','كجمع متجهين في مستوى أرجاند.','يشبه تمامًا جمع المتجهات في الهندسة.']
 ],
 [ // ٠٨ المتتاليات
 ['المتتالية الحسابية','ما الحد العام للمتتالية الحسابية؟','حن = أ + (ن − ١) د.','د هو الفرق المشترك.'],
@@ -607,7 +751,17 @@ const UNIT_Q=[
 ['الصيغة الارتدادية','ما معنى تعريف متتالية بصيغة ارتدادية؟','كل حد يُعرَّف بدلالة الحد أو الحدود التي تسبقه مباشرة.','نحتاج أيضًا لمعرفة الحد أو الحدود الأولى للبدء.'],
 ['المتتالية اللانهائية المتقاربة','متى يكون لمتتالية هندسية لانهائية مجموع محدود، وما قانونه؟','عندما |ر| < ١، ومجموعها = أ ÷ (١ − ر).','إذا |ر| ≥ ١ يتزايد المجموع بلا نهاية ولا يتقارب.'],
 ['الفرق المشترك','ما صفة الفرق المشترك د في المتتالية الحسابية؟','ثابت بين كل حد والحد الذي يليه (حن₊١ − حن = د).','هذا الثبات هو ما يميّز المتتالية الحسابية.'],
-['النسبة المشتركة','ما صفة النسبة المشتركة ر في المتتالية الهندسية؟','ثابتة بين كل حد والحد الذي يليه (حن₊١ ÷ حن = ر).','هذا الثبات هو ما يميّز المتتالية الهندسية.']
+['النسبة المشتركة','ما صفة النسبة المشتركة ر في المتتالية الهندسية؟','ثابتة بين كل حد والحد الذي يليه (حن₊١ ÷ حن = ر).','هذا الثبات هو ما يميّز المتتالية الهندسية.'],
+['متتالية تنازلية','متى تكون المتتالية الحسابية تنازلية؟','عندما يكون الفرق المشترك د سالبًا.','كل حد يكون أصغر من الحد السابق له.'],
+['متتالية هندسية متناقصة','متى تكون المتتالية الهندسية متناقصة (تقترب من الصفر)؟','عندما ٠ < |ر| < ١.','كل حد يصغر تدريجيًا لأننا نضرب في كسر أقل من الواحد.'],
+['إيجاد الحد الأول من الحد العام','إذا كان حن = ٣ن + ٢ لمتتالية حسابية، فما حدها الأول أ والفرق المشترك د؟','أ = ٥، د = ٣.','نعوّض ن=١ لإيجاد أ، والفرق المشترك هو معامل ن.'],
+['متتالية بالصيغة الارتدادية','متتالية معرّفة بـ ح١=٢، حن = حن₋١ + ٥؛ ما نوعها؟','متتالية حسابية فرقها المشترك ٥.','كل حد يزيد عن السابق بمقدار ثابت هو خاصية المتتالية الحسابية.'],
+['مجموع حسابي بمعرفة الحدين','إذا كان أول حد ٢ وآخر حد ٢٠ وعدد الحدود ١٠، فما المجموع؟','١١٠.','جن = ن/٢ × (أ + ل) = ١٠/٢ × (٢+٢٠) = ١١٠.'],
+['حد نوني لمتتالية هندسية','متتالية هندسية أولها ٣ ونسبتها ٢؛ ما حدها الخامس؟','٤٨.','حن = أ رⁿ⁻¹ = ٣ × ٢⁴ = ٤٨.'],
+['تقارب متتالية هندسية لانهائية','متتالية هندسية لانهائية نسبتها ١/٢ وحدها الأول ٤؛ ما مجموعها؟','٨.','المجموع = أ ÷ (١ − ر) = ٤ ÷ (١ − ١/٢) = ٨، لأن |ر| < ١.'],
+['الوسط الحسابي والمتتالية','إذا كانت أ، م، ب متتالية حسابية، فكيف نعبّر عن م بدلالة أ وب؟','م = (أ + ب) ÷ ٢.','م هو الوسط الحسابي بين أ وب تمامًا.'],
+['الوسط الهندسي والمتتالية','إذا كانت أ، م، ب متتالية هندسية موجبة الحدود، فكيف نعبّر عن م بدلالة أ وب؟','م = √(أ ب).','م هو الوسط الهندسي بين أ وب.'],
+['تطبيق: سداد قرض بأقساط متزايدة','إذا كانت أقساط سداد قرض تتزايد بمقدار ثابت كل شهر، فأي نوع من المتتاليات يصف مجموع المسدد الكلي؟','متتالية حسابية، والمجموع يُحسب بقانون مجموع ن حدًا لمتتالية حسابية.','النمو الثابت في الزيادة الشهرية هو الخاصية المميزة للمتتالية الحسابية.']
 ]];
 const QS=[],QUNIT=[],UNIT_START=[];
 (()=>{let acc=0;UNIT_Q.forEach((arr,ui)=>{UNIT_START.push(acc);arr.forEach(q=>{QS.push(q);QUNIT.push(ui)});acc+=arr.length})})();
@@ -619,7 +773,8 @@ const frac=(n,d)=>{if(d<0){n=-n;d=-d}const g=gcd(n,d);n/=g;d/=g;return d===1?fmt
 const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 const unitOf=id=>QUNIT[id-1];
 const KEY='bnh-state';
-const norm=S=>({name:S.name||'طالب الرياضيات',solved:S.solved||[],correct:S.correct||[],review:S.review||[],points:S.points||0,quizDone:!!S.quizDone});
+const norm=S=>({name:S.name||'طالب الرياضيات',solved:S.solved||[],correct:S.correct||[],review:S.review||[],points:S.points||0,quizDone:!!S.quizDone,streak:S.streak||0,lastActive:S.lastActive||''});
+const todayStr=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
 const LETTERS=['أ','ب','جـ','د'];
 const MUTED='color-mix(in srgb,var(--color-text) 72%,transparent)';
 const sq=(x,y,r=5)=>`M${x-r} ${y-r}h${2*r}v${2*r}h${-2*r}Z`;
@@ -627,9 +782,10 @@ const sq=(x,y,r=5)=>`M${x-r} ${y-r}h${2*r}v${2*r}h${-2*r}Z`;
 class Component extends DCLogic {
   state = (()=>{let S={};try{S=JSON.parse(localStorage.getItem(KEY)||'{}')}catch(e){}
     return {page:localStorage.getItem('bnh-page')||this.props.startPage||'home',S:norm(S),unit:'all',term:'',open:{},p:0,quiz:null,
-      lab:'exp',ea:1,eb:2,x1:-3,y1:-2,x2:3,y2:2,seq:'a',s1:2,sd:3,sr:2,sn:8,toast:'',toastOn:false,confirmReset:false}})();
+      lab:'exp',ea:1,eb:2,x1:-3,y1:-2,x2:3,y2:2,seq:'a',s1:2,sd:3,sr:2,sn:8,toast:'',toastOn:false,confirmReset:false,printMode:false}})();
 
   componentDidMount(){
+    {const S={...this.state.S};const today=todayStr();if(S.lastActive!==today){const y=new Date();y.setDate(y.getDate()-1);const yStr=y.getFullYear()+'-'+String(y.getMonth()+1).padStart(2,'0')+'-'+String(y.getDate()).padStart(2,'0');S.streak=S.lastActive===yStr?S.streak+1:1;S.lastActive=today;this.save(S)}}
     this.onScroll=()=>{if(this.state.page!=='home'||!this.mapEl)return;const r=this.mapEl.getBoundingClientRect();const tot=r.height-window.innerHeight;const p=Math.max(0,Math.min(1,tot>0?-r.top/tot:0));if(Math.abs(p-this.state.p)>0.004)this.setState({p})};
     this.onKey=e=>{const t=e.target;if(t&&/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))return;const q=this.state.quiz;if(this.state.page!=='quiz'||!q||q.done)return;const k='١٢٣٤'.indexOf(e.key)>-1?'١٢٣٤'.indexOf(e.key):'1234'.indexOf(e.key);if(k>-1){this.pick(k);e.preventDefault()}else if(e.key==='Enter'){this.quizAction();e.preventDefault()}};
     window.addEventListener('scroll',this.onScroll,true);window.addEventListener('resize',this.onScroll);window.addEventListener('keydown',this.onKey);
@@ -645,7 +801,10 @@ class Component extends DCLogic {
   pct(u){return Math.round(this.state.S.correct.filter(id=>unitOf(id)===u).length/UNIT_Q[u].length*100)}
   know(id){const S={...this.state.S};const first=!S.correct.includes(id);S.correct=first?[...S.correct,id]:S.correct;S.solved=S.solved.includes(id)?S.solved:[...S.solved,id];S.review=S.review.filter(x=>x!==id);if(first)S.points+=2;this.save(S);this.show(first?'أحسنت! +٢ نقطة':'السؤال مسجّل في تقدمك')}
   review(id){const S={...this.state.S};S.correct=S.correct.filter(x=>x!==id);S.solved=S.solved.includes(id)?S.solved:[...S.solved,id];S.review=S.review.includes(id)?S.review:[...S.review,id];this.save(S);this.show('أُضيف إلى قائمة المراجعة')}
-  startQuiz=()=>{const n=this.qLen();const ids=shuffle(QS.map((_,i)=>i+1)).slice(0,n);const opts=ids.map(id=>{const u=unitOf(id),start=UNIT_START[u],count=UNIT_Q[u].length,correct=QS[id-1][2],others=[];for(let k=0;k<count;k++){const idx=start+k;if(idx!==id-1)others.push(QS[idx][2])}return shuffle([correct,...shuffle(others).slice(0,3)])});this.setState({quiz:{ids,opts,i:0,sel:null,checked:false,score:0,right:0,done:false}})};
+  startQuiz=(customIds)=>{const custom=customIds&&customIds.length;const ids=custom?shuffle(customIds):shuffle(QS.map((_,i)=>i+1)).slice(0,this.qLen());const opts=ids.map(id=>{const u=unitOf(id),start=UNIT_START[u],count=UNIT_Q[u].length,correct=QS[id-1][2],others=[];for(let k=0;k<count;k++){const idx=start+k;if(idx!==id-1)others.push(QS[idx][2])}return shuffle([correct,...shuffle(others).slice(0,3)])});this.setState({quiz:{ids,opts,i:0,sel:null,checked:false,score:0,right:0,done:false}})};
+  startWeak=()=>{const rev=this.state.S.review;if(!rev.length){this.show('لا توجد أسئلة للمراجعة الآن');return}this.go('quiz');this.startQuiz(rev)};
+  printBank=()=>{this.setState({printMode:true});setTimeout(()=>{window.print();this.setState({printMode:false})},60)};
+  shareResult=()=>{const q=this.state.quiz;if(!q)return;const S=this.state.S;const text=`حصلت على ${AR(q.right)}/${AR(q.ids.length)} في اختبار الرياضيات على منصة مدارس بن الهيثم الخاصة. مجموع نقاطي: ${AR(S.points)}.`;if(navigator.share){navigator.share({text}).catch(()=>{})}else if(navigator.clipboard){navigator.clipboard.writeText(text).then(()=>this.show('تم نسخ النتيجة')).catch(()=>this.show(text))}else{this.show(text)}};
   pick(k){const q=this.state.quiz;if(!q||q.checked)return;this.setState({quiz:{...q,sel:k}})}
   quizAction=()=>{const q=this.state.quiz;if(!q)return;if(!q.checked){if(q.sel==null){this.show('اختر إجابة أولًا');return}const id=q.ids[q.i];const ok=q.opts[q.i][q.sel]===QS[id-1][2];const S={...this.state.S};if(!S.solved.includes(id))S.solved=[...S.solved,id];if(ok){if(!S.correct.includes(id))S.correct=[...S.correct,id];S.review=S.review.filter(x=>x!==id);S.points+=5}else if(!S.review.includes(id))S.review=[...S.review,id];this.save(S);this.setState({quiz:{...q,checked:true,score:q.score+(ok?5:0),right:q.right+(ok?1:0),lastOk:ok}});return}
     if(q.i<q.ids.length-1){this.setState({quiz:{...q,i:q.i+1,sel:null,checked:false}});return}
@@ -665,7 +824,7 @@ class Component extends DCLogic {
     // bank
     const term=st.term.trim();
     const list=QS.map((x,i)=>({x,id:i+1})).filter(o=>(st.unit==='all'||unitOf(o.id)===st.unit)&&(!term||(o.x.join(' ')+' '+UNITS[unitOf(o.id)].t).includes(term)));
-    const bankItems=list.map(({x,id})=>{const open=!!st.open[id];const c=S.correct.includes(id),r=S.review.includes(id);return {id,kicker:`الوحدة ${AR(unitOf(id)+1)} · ${x[0]}`,q:x[1],a:x[2],idea:x[3],open,toggleLabel:open?'إخفاء الإجابة':'إظهار الإجابة',
+    const bankItems=list.map(({x,id})=>{const open=st.printMode||!!st.open[id];const c=S.correct.includes(id),r=S.review.includes(id);return {id,kicker:`الوحدة ${AR(unitOf(id)+1)} · ${x[0]}`,q:x[1],a:x[2],idea:x[3],open,toggleLabel:open?'إخفاء الإجابة':'إظهار الإجابة',
       toggle:()=>this.setState(s=>({open:{...s.open,[id]:!s.open[id]}})),know:()=>this.know(id),review:()=>this.review(id),
       status:c?'عرفتها ✓':r?'للمراجعة':'جديد',tagClass:c?'tag-accent':r?'tag-neutral':'tag-outline'}});
     const chips=[{k:'all',label:'كل الوحدات'}].concat(UNITS.map((u,i)=>({k:i,label:`${AR(i+1)} · ${u.s}`}))).map(c=>{const on=st.unit===c.k;return {label:c.label,go:()=>this.setState({unit:c.k}),border:on?'var(--color-accent)':'var(--color-divider)',bg:on?'var(--color-accent)':'transparent',fg:on?'var(--color-bg)':'var(--color-text)'}});
@@ -715,7 +874,9 @@ class Component extends DCLogic {
       showGrid:this.props.showGrid??true,navItems:nav,initial:(S.name.trim()[0]||'م'),S,
       isHome:page==='home',isBank:page==='bank',isQuiz:page==='quiz',isLab:page==='lab',isDash:page==='dash',
       goHome:()=>this.go('home'),goDash:()=>this.go('dash'),goQuiz:()=>this.go('quiz'),goBankAll:()=>this.goUnit('all'),
-      stats:[{label:'الأسئلة المحلولة',value:AR(S.solved.length),note:`من ${AR(QS.length)} سؤالًا`},{label:'نسبة الإتقان',value:AR(acc)+'٪',note:'من إجاباتك'},{label:'رموز الإنجاز',value:`${AR(unlocked)}/٩`,note:'رمز لكل وحدة ورمز للتحدي'},{label:'النقاط',value:AR(S.points),note:levelText}],
+      qod:(()=>{const start=new Date(new Date().getFullYear(),0,0);const dayIdx=Math.floor((new Date()-start)/86400000);const qid=(dayIdx%QS.length)+1,x=QS[qid-1],open=!!st.open.qod;return {kicker:UNITS[unitOf(qid)].s,q:x[1],a:x[2],idea:x[3],open,toggleLabel:open?'إخفاء الإجابة':'إظهار الإجابة',toggle:()=>this.setState(s=>({open:{...s.open,qod:!s.open.qod}}))}})(),
+      printBank:this.printBank,shareResult:this.shareResult,startWeak:this.startWeak,weakCount:AR(S.review.length),weakDisabled:!S.review.length,
+      stats:[{label:'الأسئلة المحلولة',value:AR(S.solved.length),note:`من ${AR(QS.length)} سؤالًا`},{label:'التتالي اليومي',value:`${AR(S.streak)} يوم`,note:'زر المنصة يوميًا لتزيد السلسلة'},{label:'نسبة الإتقان',value:AR(acc)+'٪',note:'من إجاباتك'},{label:'رموز الإنجاز',value:`${AR(unlocked)}/٩`,note:'رمز لكل وحدة ورمز للتحدي'},{label:'النقاط',value:AR(S.points),note:levelText}],
       mapRef:this.mapRef,activeUnit,unitRows,railH:(st.p*100).toFixed(1)+'%',
       paths:[{kicker:'بنك الأسئلة',title:'مراجعة مركّزة',body:`تصفّح ${AR(QS.length)} سؤالًا بحسب الوحدة، واكشف الإجابة والفكرة الرياضية.`,go:()=>this.goUnit('all')},{kicker:'اختبر نفسك',title:'تحدٍّ سريع',body:`${AR(n)} أسئلة متنوعة بخيارات متعددة، و+٥ نقاط لكل إجابة صحيحة.`,go:()=>this.go('quiz')},{kicker:'المختبر',title:'ارسم وجرّب',body:'الدالة الأسية، ميل المستقيم، والمتتاليات — حرّك القيم وشاهد الرسم يتغيّر.',go:()=>this.go('lab')}],
       term:st.term,onTerm:e=>this.setState({term:e.target.value}),chips,bankItems,bankEmpty:!bankItems.length,bankCount:`${AR(bankItems.length)} سؤالًا`,bankTitle:st.unit==='all'?'كل الوحدات':UNITS[st.unit].t,
@@ -728,7 +889,7 @@ class Component extends DCLogic {
       seqTabs,s1,sn,s1L:fmt(s1),snL:fmt(sn),onS1:num('s1'),onSn:num('sn'),stepName:ar?'الفرق المشترك د':'الأساس ر',stepL:fmt(step),stepMin:ar?-3:0.5,stepMax:ar?5:3,stepStep:ar?1:0.5,stepVal:step,onStep:num(ar?'sd':'sr'),
       seqBars,seqBase:`M0 ${base}H600`,seqTerms:terms.map(t=>fmt(t)).join('، '),seqReadouts,
       onName:e=>{const S2={...S,name:e.target.value};this.save(S2)},levelText,levelPoints:`${AR(Math.min(S.points,100))} / ١٠٠`,levelW:Math.min(S.points,100)+'%',
-      dashMini:[{label:'محلولة',value:AR(S.solved.length)},{label:'الدقة',value:AR(acc)+'٪'},{label:'للمراجعة',value:AR(S.review.length)}],
+      dashMini:[{label:'محلولة',value:AR(S.solved.length)},{label:'الدقة',value:AR(acc)+'٪'},{label:'للمراجعة',value:AR(S.review.length)},{label:'أيام متتالية',value:AR(S.streak)}],
       tokensLabel:`${AR(unlocked)} / ٩`,
       tokens:UNITS.map((u,i)=>({on:pcts[i]>=100,mark:PAD(i+1),name:u.s,full:u.t})).concat([{on:S.quizDone,mark:'✦',name:'بطل التحدي',full:'أكمل الاختبار'}]).map(t=>({...t,border:t.on?'var(--color-accent)':'var(--color-divider)',bg:t.on?'var(--color-accent-100)':'transparent',fg:t.on?'var(--color-accent-900)':'var(--color-neutral-600)'})),
       mastery:UNITS.map((u,i)=>({num:PAD(i+1),title:u.t,w:pcts[i]+'%',pctLabel:AR(pcts[i])+'٪',go:()=>this.goUnit(i)})),
